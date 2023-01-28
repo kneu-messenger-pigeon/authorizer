@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin authorize</title>
+</head>
+<body>
+    <form method="post" action="{{ .actionUrl }}">
+        <input type="hidden" name="state" value="{{ .state }}">
+        <input type="number" name="student_id" placeholder="Fill student id" min="1" />
+        <input type="submit" value="Authorize as student">
+    </form>
+
+</body>
+</html>
