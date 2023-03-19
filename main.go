@@ -42,6 +42,7 @@ func runApp(out io.Writer, listenAndServe func(string, http.Handler) error) erro
 			Balancer: &kafka.LeastBytes{},
 		},
 		oauthClient: kneu.OauthClient{
+			BaseUri:      config.kneuBaseUri,
 			ClientId:     config.kneuClientId,
 			ClientSecret: config.kneuClientSecret,
 		},

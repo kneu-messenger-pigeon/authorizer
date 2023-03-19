@@ -109,7 +109,10 @@ func (controller *ApiController) completeAuth(c *gin.Context) {
 	}
 
 	if err == nil {
-		apiClient := kneu.ApiClient{AccessToken: tokenResponse.AccessToken}
+		apiClient := kneu.ApiClient{
+			BaseUri:     controller.config.kneuBaseUri,
+			AccessToken: tokenResponse.AccessToken,
+		}
 		userMeResponse, err = apiClient.GetUserMe()
 	}
 

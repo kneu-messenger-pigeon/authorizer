@@ -13,6 +13,7 @@ var expectedConfig = Config{
 	listenAddress: ":9080",
 	kafkaHost:     "KAFKA:9999",
 
+	kneuBaseUri:      "https://auth.kneu.test/",
 	kneuClientId:     99,
 	kneuClientSecret: "testClientSecret",
 
@@ -26,6 +27,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		_ = os.Setenv("PUBLIC_URL", expectedConfig.publicUrl)
 		_ = os.Setenv("LISTEN", expectedConfig.listenAddress)
 		_ = os.Setenv("KAFKA_HOST", expectedConfig.kafkaHost)
+		_ = os.Setenv("KNEU_BASE_URI", expectedConfig.kneuBaseUri)
 		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(expectedConfig.kneuClientId))
 		_ = os.Setenv("KNEU_CLIENT_SECRET", expectedConfig.kneuClientSecret)
 		_ = os.Setenv("JWT_SECRET_KEY", string(expectedConfig.jwtSecretKey))
@@ -45,6 +47,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		envFileContent += fmt.Sprintf("LISTEN=%s\n", expectedConfig.listenAddress)
 		envFileContent += fmt.Sprintf("KAFKA_HOST=%s\n", expectedConfig.kafkaHost)
 
+		envFileContent += fmt.Sprintf("KNEU_BASE_URI=%s\n", expectedConfig.kneuBaseUri)
 		envFileContent += fmt.Sprintf("KNEU_CLIENT_ID=%d\n", expectedConfig.kneuClientId)
 		envFileContent += fmt.Sprintf("KNEU_CLIENT_SECRET=%s\n", expectedConfig.kneuClientSecret)
 
@@ -67,7 +70,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		_ = os.Setenv("PUBLIC_URL", "")
 		_ = os.Setenv("LISTEN", "")
 		_ = os.Setenv("KAFKA_HOST", "")
-		_ = os.Setenv("KNEU_API_HOST", "")
+		_ = os.Setenv("KNEU_BASE_URI", "")
 		_ = os.Setenv("KNEU_CLIENT_ID", "")
 		_ = os.Setenv("KNEU_CLIENT_SECRET", "")
 		_ = os.Setenv("JWT_SECRET_KEY", "")
@@ -85,6 +88,10 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		assert.Emptyf(
 			t, config.listenAddress,
 			"Expected for empty config.listenAddress, actual %s", config.listenAddress,
+		)
+		assert.Emptyf(
+			t, config.kneuBaseUri,
+			"Expected for empty config.kneuBaseUri, actual %s", config.kneuBaseUri,
 		)
 		assert.Emptyf(
 			t, config.kneuClientId,
@@ -106,6 +113,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		_ = os.Setenv("PUBLIC_URL", "")
 		_ = os.Setenv("LISTEN", expectedConfig.listenAddress)
 		_ = os.Setenv("KAFKA_HOST", expectedConfig.kafkaHost)
+		_ = os.Setenv("KNEU_BASE_URI", expectedConfig.kneuBaseUri)
 		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(expectedConfig.kneuClientId))
 		_ = os.Setenv("KNEU_CLIENT_SECRET", expectedConfig.kneuClientSecret)
 		_ = os.Setenv("JWT_SECRET_KEY", string(expectedConfig.jwtSecretKey))
@@ -123,6 +131,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		_ = os.Setenv("PUBLIC_URL", expectedConfig.publicUrl)
 		_ = os.Setenv("LISTEN", "")
 		_ = os.Setenv("KAFKA_HOST", expectedConfig.kafkaHost)
+		_ = os.Setenv("KNEU_BASE_URI", expectedConfig.kneuBaseUri)
 		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(expectedConfig.kneuClientId))
 		_ = os.Setenv("KNEU_CLIENT_SECRET", expectedConfig.kneuClientSecret)
 		_ = os.Setenv("JWT_SECRET_KEY", string(expectedConfig.jwtSecretKey))
@@ -140,6 +149,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		_ = os.Setenv("PUBLIC_URL", expectedConfig.publicUrl)
 		_ = os.Setenv("LISTEN", expectedConfig.listenAddress)
 		_ = os.Setenv("KAFKA_HOST", "")
+		_ = os.Setenv("KNEU_BASE_URI", expectedConfig.kneuBaseUri)
 		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(expectedConfig.kneuClientId))
 		_ = os.Setenv("KNEU_CLIENT_SECRET", expectedConfig.kneuClientSecret)
 		_ = os.Setenv("JWT_SECRET_KEY", string(expectedConfig.jwtSecretKey))
@@ -157,7 +167,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		_ = os.Setenv("PUBLIC_URL", expectedConfig.publicUrl)
 		_ = os.Setenv("LISTEN", expectedConfig.listenAddress)
 		_ = os.Setenv("KAFKA_HOST", expectedConfig.kafkaHost)
-		_ = os.Setenv("KNEU_API_HOST", "")
+		_ = os.Setenv("KNEU_BASE_URI", "")
 		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(expectedConfig.kneuClientId))
 		_ = os.Setenv("KNEU_CLIENT_SECRET", expectedConfig.kneuClientSecret)
 		_ = os.Setenv("JWT_SECRET_KEY", string(expectedConfig.jwtSecretKey))
@@ -171,6 +181,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		_ = os.Setenv("PUBLIC_URL", expectedConfig.publicUrl)
 		_ = os.Setenv("LISTEN", expectedConfig.listenAddress)
 		_ = os.Setenv("KAFKA_HOST", expectedConfig.kafkaHost)
+		_ = os.Setenv("KNEU_BASE_URI", expectedConfig.kneuBaseUri)
 		_ = os.Setenv("KNEU_CLIENT_ID", "")
 		_ = os.Setenv("KNEU_CLIENT_SECRET", expectedConfig.kneuClientSecret)
 		_ = os.Setenv("JWT_SECRET_KEY", string(expectedConfig.jwtSecretKey))
@@ -188,6 +199,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		_ = os.Setenv("PUBLIC_URL", expectedConfig.publicUrl)
 		_ = os.Setenv("LISTEN", expectedConfig.listenAddress)
 		_ = os.Setenv("KAFKA_HOST", expectedConfig.kafkaHost)
+		_ = os.Setenv("KNEU_BASE_URI", expectedConfig.kneuBaseUri)
 		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(expectedConfig.kneuClientId))
 		_ = os.Setenv("KNEU_CLIENT_SECRET", "")
 		_ = os.Setenv("JWT_SECRET_KEY", string(expectedConfig.jwtSecretKey))
@@ -205,6 +217,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		_ = os.Setenv("PUBLIC_URL", expectedConfig.publicUrl)
 		_ = os.Setenv("LISTEN", expectedConfig.listenAddress)
 		_ = os.Setenv("KAFKA_HOST", expectedConfig.kafkaHost)
+		_ = os.Setenv("KNEU_BASE_URI", expectedConfig.kneuBaseUri)
 		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(expectedConfig.kneuClientId))
 		_ = os.Setenv("KNEU_CLIENT_SECRET", expectedConfig.kneuClientSecret)
 		_ = os.Setenv("JWT_SECRET_KEY", "")
@@ -219,7 +232,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		_ = os.Setenv("PUBLIC_URL", "")
 		_ = os.Setenv("LISTEN", "")
 		_ = os.Setenv("KAFKA_HOST", "")
-		_ = os.Setenv("KNEU_API_HOST", "")
+		_ = os.Setenv("KNEU_BASE_URI", "")
 		_ = os.Setenv("KNEU_CLIENT_ID", "")
 		_ = os.Setenv("KNEU_CLIENT_SECRET", "")
 		_ = os.Setenv("JWT_SECRET_KEY", string(expectedConfig.jwtSecretKey))
@@ -241,6 +254,10 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 			"Expected for empty config.listenAddress, actual %s", config.listenAddress,
 		)
 		assert.Emptyf(
+			t, config.kneuBaseUri,
+			"Expected for empty config.kneuBaseUri, actual %s", config.kneuBaseUri,
+		)
+		assert.Emptyf(
 			t, config.kneuClientId,
 			"Expected for empty config.kneuClientId, actual %d", config.kneuClientId,
 		)
@@ -256,6 +273,7 @@ func assertConfig(t *testing.T, expected Config, actual Config) {
 	assert.Equal(t, expected.publicUrl, actual.publicUrl)
 	assert.Equal(t, expected.listenAddress, actual.listenAddress)
 	assert.Equal(t, expected.kafkaHost, actual.kafkaHost)
+	assert.Equal(t, expected.kneuBaseUri, actual.kneuBaseUri)
 	assert.Equal(t, expected.kneuClientId, actual.kneuClientId)
 	assert.Equal(t, expected.kneuClientSecret, actual.kneuClientSecret)
 }

@@ -4,6 +4,8 @@ github.com/berejant/go-kneu v0.1.1 h1:FFnzXG8ZoDlLcfmnViGPK4BM/m/aB0jlw5tnzfuOy5
 github.com/berejant/go-kneu v0.1.1/go.mod h1:WzeT6vKANsglUcHsu5KjZcVq8orZsEwVE+QDYK8DIQA=
 github.com/berejant/go-kneu v0.1.2 h1:8vthbB1jPNZCj8DFmLdq0/zyHvXNnJYmny2rgCXzxqc=
 github.com/berejant/go-kneu v0.1.2/go.mod h1:WzeT6vKANsglUcHsu5KjZcVq8orZsEwVE+QDYK8DIQA=
+github.com/berejant/go-kneu v0.1.3 h1:jMYmrBJ18zj0EdUEGsU4IGwG6TPCmR5qXmde4ICTR6s=
+github.com/berejant/go-kneu v0.1.3/go.mod h1:WzeT6vKANsglUcHsu5KjZcVq8orZsEwVE+QDYK8DIQA=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=

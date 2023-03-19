@@ -26,5 +26,5 @@ func TestCloseHtml(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	assert.Contains(t, w.Body.String(), "<script>window.close();</script>")
+	assert.Contains(t, w.Body.String(), "location.replace(\"https://kneu.edu.ua/\");")
 }

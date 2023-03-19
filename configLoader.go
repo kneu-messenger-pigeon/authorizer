@@ -17,6 +17,7 @@ type Config struct {
 	listenAddress string
 	kafkaHost     string
 
+	kneuBaseUri      string
 	kneuClientId     int
 	kneuClientSecret string
 
@@ -43,6 +44,7 @@ func loadConfig(envFilename string) (Config, error) {
 		listenAddress: os.Getenv("LISTEN"),
 		kafkaHost:     os.Getenv("KAFKA_HOST"),
 
+		kneuBaseUri:      os.Getenv("KNEU_BASE_URI"),
 		kneuClientId:     kneuClientId,
 		kneuClientSecret: os.Getenv("KNEU_CLIENT_SECRET"),
 
