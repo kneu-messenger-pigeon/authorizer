@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/berejant/go-kneu"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -20,10 +19,11 @@ import (
 const adminUserid = 1
 
 type ApiController struct {
-	out         io.Writer
-	config      Config
-	writer      events.WriterInterface
-	oauthClient kneu.OauthClient
+	out              io.Writer
+	config           Config
+	writer           events.WriterInterface
+	oauthClient      kneu.OauthClientInterface
+	apiClientFactory func(token string) kneu.ApiClientInterface
 
 	oauthRedirectUrl string
 }
@@ -60,23 +60,21 @@ func (controller *ApiController) setupRouter() *gin.Engine {
 }
 
 func (controller *ApiController) getAuthUrl(c *gin.Context) {
+	var err error
+	var state string
+
 	authOptionsClaims := AuthOptionsClaims{}
-	err := c.Bind(&authOptionsClaims)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+	err = c.Bind(&authOptionsClaims)
+	if err == nil {
+		authOptionsClaims.KneuUserId = nil
+		authOptionsClaims.Issuer = "pigeonAuthorizer"
+		authOptionsClaims.ExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Minute * 15))
+
+		state, err = controller.buildState(authOptionsClaims)
 	}
 
-	authOptionsClaims.KneuUserId = nil
-	authOptionsClaims.Issuer = "pigeonAuthorizer"
-	authOptionsClaims.ExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Minute * 15))
-
-	state, err := controller.buildState(authOptionsClaims)
-
 	if err != nil {
-		fmt.Fprintf(controller.out, "Failed to make state token: %s", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to make state token"})
-
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Wrong request data"})
 	} else {
 		c.JSON(http.StatusOK, gin.H{
 			"authUrl": controller.oauthClient.GetOauthUrl(controller.oauthRedirectUrl, state),
@@ -109,11 +107,7 @@ func (controller *ApiController) completeAuth(c *gin.Context) {
 	}
 
 	if err == nil {
-		apiClient := kneu.ApiClient{
-			BaseUri:     controller.config.kneuBaseUri,
-			AccessToken: tokenResponse.AccessToken,
-		}
-		userMeResponse, err = apiClient.GetUserMe()
+		userMeResponse, err = controller.apiClientFactory(tokenResponse.AccessToken).GetUserMe()
 	}
 
 	if err == nil && userMeResponse.Type != "student" {
@@ -135,7 +129,6 @@ func (controller *ApiController) completeAuth(c *gin.Context) {
 		if redirectUri == "" {
 			redirectUri = controller.config.publicUrl + "/close.html"
 		}
-		fmt.Println(redirectUri)
 
 		c.Redirect(http.StatusFound, redirectUri)
 	}

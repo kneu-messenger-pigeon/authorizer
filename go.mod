@@ -3,7 +3,7 @@ module authorizer
 go 1.19
 
 require (
-	github.com/berejant/go-kneu v0.1.3
+	github.com/berejant/go-kneu v0.1.5
 	github.com/gin-gonic/gin v1.8.2
 	github.com/golang-jwt/jwt/v5 v5.0.0-rc.1
 	github.com/joho/godotenv v1.4.0

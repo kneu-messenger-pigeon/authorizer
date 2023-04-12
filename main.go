@@ -41,12 +41,20 @@ func runApp(out io.Writer, listenAndServe func(string, http.Handler) error) erro
 			Topic:    "authorized_users",
 			Balancer: &kafka.LeastBytes{},
 		},
-		oauthClient: kneu.OauthClient{
+		oauthClient: &kneu.OauthClient{
 			BaseUri:      config.kneuBaseUri,
 			ClientId:     config.kneuClientId,
 			ClientSecret: config.kneuClientSecret,
 		},
+		apiClientFactory: func(token string) kneu.ApiClientInterface {
+			return &kneu.ApiClient{
+				BaseUri:     config.kneuBaseUri,
+				AccessToken: token,
+			}
+		},
 	}
+
+	apiController.apiClientFactory("test")
 
 	return listenAndServe(
 		config.listenAddress, apiController.setupRouter(),
