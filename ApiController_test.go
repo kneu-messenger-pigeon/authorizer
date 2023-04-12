@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -187,7 +188,7 @@ func TestCompleteAuth(t *testing.T) {
 			Client:       client,
 			ClientUserId: clientUserId,
 			RedirectUri:  "",
-			KneuUserId:   nil,
+			KneuUserId:   0,
 		}
 
 		state, _ := controller.buildState(authOptionsClaims)
@@ -233,7 +234,7 @@ func TestCompleteAuth(t *testing.T) {
 			Client:       client,
 			ClientUserId: clientUserId,
 			RedirectUri:  "",
-			KneuUserId:   nil,
+			KneuUserId:   0,
 		}
 
 		state, _ := controller.buildState(authOptionsClaims)
@@ -309,7 +310,7 @@ func TestCompleteAuth(t *testing.T) {
 			Client:       client,
 			ClientUserId: clientUserId,
 			RedirectUri:  finalRedirectUri,
-			KneuUserId:   nil,
+			KneuUserId:   0,
 		}
 
 		state, _ := controller.buildState(authOptionsClaims)
@@ -359,13 +360,133 @@ func TestCompleteAuth(t *testing.T) {
 			Client:       client,
 			ClientUserId: clientUserId,
 			RedirectUri:  finalRedirectUri,
-			KneuUserId:   nil,
+			KneuUserId:   0,
 		}
 
 		state, _ := controller.buildState(authOptionsClaims)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest(http.MethodGet, "/complete?code="+code+"&state="+state, nil)
+
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.Contains(t, w.Body.String(), "Не вдалося завершити авторизацію")
+	})
+}
+
+func TestCompleteAdminAuth(t *testing.T) {
+	config := Config{
+		publicUrl:        "https://pigeon.com",
+		listenAddress:    "",
+		kafkaHost:        "",
+		kneuBaseUri:      "",
+		kneuClientId:     0,
+		kneuClientSecret: "",
+		jwtSecretKey:     nil,
+		appSecret:        "test-secret",
+	}
+
+	t.Run("success", func(t *testing.T) {
+		client := "telegram"
+		clientUserId := "999"
+		studentId := 123
+
+		writer := events.NewMockWriterInterface(t)
+
+		payload, _ := json.Marshal(events.UserAuthorizedEvent{
+			Client:       client,
+			ClientUserId: clientUserId,
+			StudentId:    studentId,
+		})
+
+		expectedMessage := kafka.Message{
+			Key:   []byte(events.UserAuthorizedEventName),
+			Value: payload,
+		}
+		writer.On("WriteMessages", context.Background(), expectedMessage).Return(nil)
+
+		controller := &ApiController{
+			out:    &bytes.Buffer{},
+			writer: writer,
+			config: config,
+		}
+
+		router := (controller).setupRouter()
+
+		authOptionsClaims := AuthOptionsClaims{
+			RegisteredClaims: jwt.RegisteredClaims{
+				Issuer:    "pigeonAuthorizer",
+				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+			},
+			Client:       client,
+			ClientUserId: clientUserId,
+			RedirectUri:  "",
+			KneuUserId:   adminUserid,
+		}
+
+		state, _ := controller.buildState(authOptionsClaims)
+
+		w := httptest.NewRecorder()
+
+		req, _ := http.NewRequest(http.MethodPost, "/admin", strings.NewReader("state="+state+"&student_id="+strconv.Itoa(studentId)))
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusFound, w.Code)
+		assert.Equal(t, config.publicUrl+"/close.html", w.Header().Get("Location"))
+	})
+
+	t.Run("empty_student_id", func(t *testing.T) {
+		client := "telegram"
+		clientUserId := "999"
+
+		controller := &ApiController{
+			out:    &bytes.Buffer{},
+			config: config,
+		}
+
+		router := (controller).setupRouter()
+
+		authOptionsClaims := AuthOptionsClaims{
+			RegisteredClaims: jwt.RegisteredClaims{
+				Issuer:    "pigeonAuthorizer",
+				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+			},
+			Client:       client,
+			ClientUserId: clientUserId,
+			RedirectUri:  "",
+			KneuUserId:   adminUserid,
+		}
+
+		state, _ := controller.buildState(authOptionsClaims)
+
+		w := httptest.NewRecorder()
+
+		req, _ := http.NewRequest(http.MethodPost, "/admin", strings.NewReader("state="+state+"&student_id=0"))
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+		router.ServeHTTP(w, req)
+
+		body := w.Body.String()
+
+		assert.Contains(t, body, "state")
+		assert.Contains(t, body, `action="/admin"`)
+		assert.Contains(t, body, `name="student_id"`)
+	})
+
+	t.Run("error_state", func(t *testing.T) {
+		controller := &ApiController{
+			out:    &bytes.Buffer{},
+			config: config,
+		}
+
+		router := (controller).setupRouter()
+
+		w := httptest.NewRecorder()
+
+		req, _ := http.NewRequest(http.MethodPost, "/admin", strings.NewReader("state=wrong-test&student_id=12"))
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 		router.ServeHTTP(w, req)
 

@@ -33,7 +33,7 @@ type AuthOptionsClaims struct {
 	Client       string `form:"client" json:"client" binding:"required"`
 	ClientUserId string `form:"client_user_id" json:"clientUserId"  binding:"required"`
 	RedirectUri  string `form:"redirect_uri" json:"redirectUri,omitempty"`
-	KneuUserId   *int   `form:"-" json:"userId,omitempty"`
+	KneuUserId   int    `form:"-" json:"userId,omitempty"`
 }
 
 func (controller *ApiController) setupRouter() *gin.Engine {
@@ -66,7 +66,7 @@ func (controller *ApiController) getAuthUrl(c *gin.Context) {
 	authOptionsClaims := AuthOptionsClaims{}
 	err = c.Bind(&authOptionsClaims)
 	if err == nil {
-		authOptionsClaims.KneuUserId = nil
+		authOptionsClaims.KneuUserId = 0
 		authOptionsClaims.Issuer = "pigeonAuthorizer"
 		authOptionsClaims.ExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Minute * 15))
 
@@ -97,7 +97,7 @@ func (controller *ApiController) completeAuth(c *gin.Context) {
 	}
 
 	if err == nil && tokenResponse.UserId == adminUserid {
-		authOptionsClaims.KneuUserId = &tokenResponse.UserId
+		authOptionsClaims.KneuUserId = tokenResponse.UserId
 
 		state, err = controller.buildState(authOptionsClaims)
 		if err == nil {
@@ -159,7 +159,7 @@ func (controller *ApiController) completeAdminAuth(c *gin.Context) {
 		}
 
 		err = errors.New("not enough rights")
-		if adminUserid == *authOptionsClaims.KneuUserId {
+		if adminUserid == authOptionsClaims.KneuUserId {
 			err = controller.finishAuthorization(authOptionsClaims, studentId)
 			if err == nil {
 				c.Redirect(http.StatusFound, controller.config.publicUrl+"/close.html")
