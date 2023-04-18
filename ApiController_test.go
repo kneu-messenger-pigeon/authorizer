@@ -13,7 +13,6 @@ import (
 	"github.com/stretchr/testify/mock"
 	"net/http"
 	"net/http/httptest"
-	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -81,9 +80,6 @@ func TestGetAuthUrl(t *testing.T) {
 		response := GetAuthUrlResponse{}
 		err := json.NewDecoder(w.Body).Decode(&response)
 		assert.NoError(t, err)
-
-		m1 := regexp.MustCompile(`state=[^&]*`)
-		response.AuthUrl = m1.ReplaceAllString(response.AuthUrl, "_state_")
 
 		assert.Equal(t, "https://auth.kneu.edu.ua/oauth?response_type=code&client_id=0&redirect_uri=https%3A%2F%2Fpigeon.com%2Fcomplete&_state_", response.AuthUrl)
 	})
