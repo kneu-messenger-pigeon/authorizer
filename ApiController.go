@@ -86,7 +86,6 @@ func (controller *ApiController) completeAuth(c *gin.Context) {
 	var authOptionsClaims AuthOptionsClaims
 	var tokenResponse kneu.OauthTokenResponse
 	var userMeResponse kneu.UserMeResponse
-	var redirectUri string
 
 	code := c.Query("code")
 	state := c.Query("state")
@@ -125,13 +124,17 @@ func (controller *ApiController) completeAuth(c *gin.Context) {
 		c.HTML(http.StatusBadRequest, "error.html", gin.H{})
 		return
 	} else {
-		redirectUri = authOptionsClaims.RedirectUri
-		if redirectUri == "" {
-			redirectUri = controller.config.publicUrl + "/close.html"
-		}
-
-		c.Redirect(http.StatusFound, redirectUri)
+		controller.successRedirect(c, authOptionsClaims)
 	}
+}
+
+func (controller *ApiController) successRedirect(c *gin.Context, claims AuthOptionsClaims) {
+	redirectUri := claims.RedirectUri
+	if redirectUri == "" {
+		redirectUri = controller.config.publicUrl + "/close.html"
+	}
+
+	c.Redirect(http.StatusFound, redirectUri)
 }
 
 func (controller *ApiController) responseWithAdminAuthFrom(c *gin.Context, state string) {
@@ -162,7 +165,7 @@ func (controller *ApiController) completeAdminAuth(c *gin.Context) {
 		if adminUserid == authOptionsClaims.KneuUserId {
 			err = controller.finishAuthorization(authOptionsClaims, studentId)
 			if err == nil {
-				c.Redirect(http.StatusFound, controller.config.publicUrl+"/close.html")
+				controller.successRedirect(c, authOptionsClaims)
 				return
 			}
 		}
