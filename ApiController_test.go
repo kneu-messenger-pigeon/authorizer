@@ -59,9 +59,20 @@ func TestGetAuthUrl(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		expectedOauthUrl := "https://auth.kneu.edu.ua/oauth?response_type=code&client_id=0&redirect_uri=https%3A%2F%2Fpigeon.com%2Fcomplete&_state_"
+		redirectUrl := "https://example.com"
+		client := "telegram"
+		clientUserId := "99"
+
+		var receivedState string
 
 		oauthClient := kneu.NewMockOauthClientInterface(t)
-		oauthClient.On("GetOauthUrl", config.publicUrl+"/complete", mock.Anything).Return(expectedOauthUrl)
+		oauthClient.On(
+			"GetOauthUrl", config.publicUrl+"/complete",
+			mock.MatchedBy(func(state string) bool {
+				receivedState = state
+				return true
+			}),
+		).Return(expectedOauthUrl)
 
 		router := (&ApiController{
 			out:         &bytes.Buffer{},
@@ -70,7 +81,7 @@ func TestGetAuthUrl(t *testing.T) {
 		}).setupRouter()
 
 		w := httptest.NewRecorder()
-		req, _ := http.NewRequest(http.MethodPost, "/url", strings.NewReader("client=telegram&client_user_id=99&redirect_uri=http://example.com"))
+		req, _ := http.NewRequest(http.MethodPost, "/url", strings.NewReader("client="+client+"&client_user_id="+clientUserId+"&redirect_uri="+redirectUrl))
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		req.SetBasicAuth("pigeon", config.appSecret)
 		router.ServeHTTP(w, req)
@@ -82,6 +93,18 @@ func TestGetAuthUrl(t *testing.T) {
 		assert.NoError(t, err)
 
 		assert.Equal(t, "https://auth.kneu.edu.ua/oauth?response_type=code&client_id=0&redirect_uri=https%3A%2F%2Fpigeon.com%2Fcomplete&_state_", response.AuthUrl)
+
+		authOptionsClaims := AuthOptionsClaims{}
+		_, err = jwtParser.ParseWithClaims(
+			receivedState, &authOptionsClaims,
+			func(token *jwt.Token) (interface{}, error) {
+				return config.jwtSecretKey, nil
+			},
+		)
+
+		assert.Equal(t, redirectUrl, authOptionsClaims.RedirectUri)
+		assert.Equal(t, client, authOptionsClaims.Client)
+		assert.Equal(t, clientUserId, authOptionsClaims.ClientUserId)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -114,7 +137,91 @@ func TestCompleteAuth(t *testing.T) {
 		appSecret:        "test-secret",
 	}
 
-	t.Run("success", func(t *testing.T) {
+	t.Run("success custom redirect", func(t *testing.T) {
+		client := "telegram"
+		clientUserId := "999"
+		code := "qwerty1234"
+		userId := 999
+		studentId := 123
+
+		oauthClient := kneu.NewMockOauthClientInterface(t)
+		apiClient := kneu.NewMockApiClientInterface(t)
+
+		writer := events.NewMockWriterInterface(t)
+
+		tokenResponse := kneu.OauthTokenResponse{
+			AccessToken: "test-access-token",
+			TokenType:   "Bearer",
+			ExpiresIn:   7200,
+			UserId:      userId,
+		}
+
+		oauthClient.On("GetOauthToken", config.publicUrl+"/complete", code).Return(tokenResponse, nil)
+
+		userMeResponse := kneu.UserMeResponse{
+			Id:           userId,
+			Email:        "example@kneu.edu.ua",
+			Name:         "Коваль Валера Павлович",
+			LastName:     "Коваль",
+			FirstName:    "Валера",
+			MiddleName:   "Павлович",
+			Type:         "student",
+			StudentId:    studentId,
+			GroupId:      12,
+			Sex:          "male",
+			TeacherId:    0,
+			DepartmentId: 0,
+		}
+		apiClient.On("GetUserMe").Return(userMeResponse, nil)
+
+		payload, _ := json.Marshal(events.UserAuthorizedEvent{
+			Client:       client,
+			ClientUserId: clientUserId,
+			StudentId:    studentId,
+		})
+
+		expectedMessage := kafka.Message{
+			Key:   []byte(events.UserAuthorizedEventName),
+			Value: payload,
+		}
+		writer.On("WriteMessages", context.Background(), expectedMessage).Return(nil)
+
+		controller := &ApiController{
+			out:         &bytes.Buffer{},
+			writer:      writer,
+			config:      config,
+			oauthClient: oauthClient,
+			apiClientFactory: func(token string) kneu.ApiClientInterface {
+				assert.Equal(t, tokenResponse.AccessToken, token)
+				return apiClient
+			},
+		}
+
+		router := (controller).setupRouter()
+
+		authOptionsClaims := AuthOptionsClaims{
+			RegisteredClaims: jwt.RegisteredClaims{
+				Issuer:    "pigeonAuthorizer",
+				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+			},
+			Client:       client,
+			ClientUserId: clientUserId,
+			RedirectUri:  "https://example.com/redirect",
+			KneuUserId:   0,
+		}
+
+		state, _ := controller.buildState(authOptionsClaims)
+
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest(http.MethodGet, "/complete?code="+code+"&state="+state, nil)
+
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusFound, w.Code)
+		assert.Equal(t, authOptionsClaims.RedirectUri, w.Header().Get("Location"))
+	})
+
+	t.Run("success default redirect", func(t *testing.T) {
 		client := "telegram"
 		clientUserId := "999"
 		code := "qwerty1234"
