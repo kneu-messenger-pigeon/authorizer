@@ -70,7 +70,7 @@ func TestGetAuthUrl(t *testing.T) {
 		}).setupRouter()
 
 		w := httptest.NewRecorder()
-		req, _ := http.NewRequest(http.MethodPost, "/url", strings.NewReader("client=telegram&client_user_id=99"))
+		req, _ := http.NewRequest(http.MethodPost, "/url", strings.NewReader("client=telegram&client_user_id=99&redirect_uri=http://example.com"))
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		req.SetBasicAuth("pigeon", config.appSecret)
 		router.ServeHTTP(w, req)
