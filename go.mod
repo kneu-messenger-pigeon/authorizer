@@ -7,7 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.8.2
 	github.com/golang-jwt/jwt/v5 v5.0.0-rc.1
 	github.com/joho/godotenv v1.4.0
-	github.com/kneu-messenger-pigeon/events v0.1.23
+	github.com/kneu-messenger-pigeon/events v0.1.27
 	github.com/segmentio/kafka-go v0.4.38
 	github.com/stretchr/testify v1.8.2
 )

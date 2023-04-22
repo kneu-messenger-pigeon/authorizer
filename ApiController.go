@@ -36,6 +36,14 @@ type AuthOptionsClaims struct {
 	KneuUserId   int    `form:"-" json:"userId,omitempty"`
 }
 
+type Student struct {
+	Id         int
+	LastName   string
+	FirstName  string
+	MiddleName string
+	Gender     events.Gender
+}
+
 func (controller *ApiController) setupRouter() *gin.Engine {
 	router := gin.New()
 
@@ -117,7 +125,13 @@ func (controller *ApiController) completeAuth(c *gin.Context) {
 	}
 
 	if err == nil {
-		err = controller.finishAuthorization(authOptionsClaims, userMeResponse.StudentId)
+		err = controller.finishAuthorization(authOptionsClaims, Student{
+			Id:         userMeResponse.StudentId,
+			LastName:   userMeResponse.LastName,
+			FirstName:  userMeResponse.FirstName,
+			MiddleName: userMeResponse.MiddleName,
+			Gender:     events.GenderFromString(userMeResponse.Sex),
+		})
 	}
 
 	if err != nil {
@@ -163,7 +177,13 @@ func (controller *ApiController) completeAdminAuth(c *gin.Context) {
 
 		err = errors.New("not enough rights")
 		if adminUserid == authOptionsClaims.KneuUserId {
-			err = controller.finishAuthorization(authOptionsClaims, studentId)
+			err = controller.finishAuthorization(authOptionsClaims, Student{
+				Id:         studentId,
+				LastName:   "Адмін",
+				FirstName:  "Адмін",
+				MiddleName: "Адмін",
+				Gender:     events.UnknownGender,
+			})
 			if err == nil {
 				controller.successRedirect(c, authOptionsClaims)
 				return
@@ -176,11 +196,15 @@ func (controller *ApiController) completeAdminAuth(c *gin.Context) {
 	})
 }
 
-func (controller *ApiController) finishAuthorization(claims AuthOptionsClaims, studentId int) error {
+func (controller *ApiController) finishAuthorization(claims AuthOptionsClaims, student Student) error {
 	event := events.UserAuthorizedEvent{
 		Client:       claims.Client,
 		ClientUserId: claims.ClientUserId,
-		StudentId:    studentId,
+		StudentId:    student.Id,
+		LastName:     student.LastName,
+		FirstName:    student.FirstName,
+		MiddleName:   student.MiddleName,
+		Gender:       student.Gender,
 	}
 
 	payload, _ := json.Marshal(event)

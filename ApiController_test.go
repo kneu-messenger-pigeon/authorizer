@@ -178,6 +178,10 @@ func TestCompleteAuth(t *testing.T) {
 			Client:       client,
 			ClientUserId: clientUserId,
 			StudentId:    studentId,
+			LastName:     "Коваль",
+			FirstName:    "Валера",
+			MiddleName:   "Павлович",
+			Gender:       events.Male,
 		})
 
 		expectedMessage := kafka.Message{
@@ -252,7 +256,7 @@ func TestCompleteAuth(t *testing.T) {
 			Type:         "student",
 			StudentId:    studentId,
 			GroupId:      12,
-			Sex:          "male",
+			Sex:          "female",
 			TeacherId:    0,
 			DepartmentId: 0,
 		}
@@ -262,6 +266,10 @@ func TestCompleteAuth(t *testing.T) {
 			Client:       client,
 			ClientUserId: clientUserId,
 			StudentId:    studentId,
+			LastName:     "Коваль",
+			FirstName:    "Валера",
+			MiddleName:   "Павлович",
+			Gender:       events.Female,
 		})
 
 		expectedMessage := kafka.Message{
@@ -501,6 +509,10 @@ func TestCompleteAdminAuth(t *testing.T) {
 			Client:       client,
 			ClientUserId: clientUserId,
 			StudentId:    studentId,
+			LastName:     "Адмін",
+			FirstName:    "Адмін",
+			MiddleName:   "Адмін",
+			Gender:       events.UnknownGender,
 		})
 
 		expectedMessage := kafka.Message{
