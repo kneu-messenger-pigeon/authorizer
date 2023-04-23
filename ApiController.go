@@ -33,11 +33,11 @@ type AuthOptionsClaims struct {
 	Client       string `form:"client" json:"client" binding:"required"`
 	ClientUserId string `form:"client_user_id" json:"clientUserId"  binding:"required"`
 	RedirectUri  string `form:"redirect_uri" json:"redirectUri,omitempty"`
-	KneuUserId   int    `form:"-" json:"userId,omitempty"`
+	KneuUserId   uint   `form:"-" json:"userId,omitempty"`
 }
 
 type Student struct {
-	Id         int
+	Id         uint
 	LastName   string
 	FirstName  string
 	MiddleName string
@@ -130,7 +130,7 @@ func (controller *ApiController) completeAuth(c *gin.Context) {
 			LastName:   userMeResponse.LastName,
 			FirstName:  userMeResponse.FirstName,
 			MiddleName: userMeResponse.MiddleName,
-			Gender:     events.GenderFromString(userMeResponse.Sex),
+			Gender:     events.GenderFromString(userMeResponse.Gender),
 		})
 	}
 
@@ -161,12 +161,12 @@ func (controller *ApiController) responseWithAdminAuthFrom(c *gin.Context, state
 }
 
 func (controller *ApiController) completeAdminAuth(c *gin.Context) {
-	var studentId int
+	var studentId uint64
 	c.Header("Content-Security-Policy", "base-uri 'none'; object-src 'none'; script-src 'none';")
 
 	authOptionsClaims, err := controller.parseState(c.PostForm("state"))
 	if err == nil {
-		studentId, err = strconv.Atoi(c.PostForm("student_id"))
+		studentId, err = strconv.ParseUint(c.PostForm("student_id"), 10, 0)
 	}
 
 	if err == nil {
@@ -178,7 +178,7 @@ func (controller *ApiController) completeAdminAuth(c *gin.Context) {
 		err = errors.New("not enough rights")
 		if adminUserid == authOptionsClaims.KneuUserId {
 			err = controller.finishAuthorization(authOptionsClaims, Student{
-				Id:         studentId,
+				Id:         uint(studentId),
 				LastName:   "Адмін",
 				FirstName:  "Адмін",
 				MiddleName: "Адмін",

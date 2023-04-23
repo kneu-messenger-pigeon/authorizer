@@ -28,7 +28,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		_ = os.Setenv("LISTEN", expectedConfig.listenAddress)
 		_ = os.Setenv("KAFKA_HOST", expectedConfig.kafkaHost)
 		_ = os.Setenv("KNEU_BASE_URI", expectedConfig.kneuBaseUri)
-		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(expectedConfig.kneuClientId))
+		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(int(expectedConfig.kneuClientId)))
 		_ = os.Setenv("KNEU_CLIENT_SECRET", expectedConfig.kneuClientSecret)
 		_ = os.Setenv("JWT_SECRET_KEY", string(expectedConfig.jwtSecretKey))
 		_ = os.Setenv("APP_SECRET", string(expectedConfig.appSecret))
@@ -114,7 +114,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		_ = os.Setenv("LISTEN", expectedConfig.listenAddress)
 		_ = os.Setenv("KAFKA_HOST", expectedConfig.kafkaHost)
 		_ = os.Setenv("KNEU_BASE_URI", expectedConfig.kneuBaseUri)
-		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(expectedConfig.kneuClientId))
+		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(int(expectedConfig.kneuClientId)))
 		_ = os.Setenv("KNEU_CLIENT_SECRET", expectedConfig.kneuClientSecret)
 		_ = os.Setenv("JWT_SECRET_KEY", string(expectedConfig.jwtSecretKey))
 
@@ -132,7 +132,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		_ = os.Setenv("LISTEN", "")
 		_ = os.Setenv("KAFKA_HOST", expectedConfig.kafkaHost)
 		_ = os.Setenv("KNEU_BASE_URI", expectedConfig.kneuBaseUri)
-		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(expectedConfig.kneuClientId))
+		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(int(expectedConfig.kneuClientId)))
 		_ = os.Setenv("KNEU_CLIENT_SECRET", expectedConfig.kneuClientSecret)
 		_ = os.Setenv("JWT_SECRET_KEY", string(expectedConfig.jwtSecretKey))
 
@@ -150,7 +150,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		_ = os.Setenv("LISTEN", expectedConfig.listenAddress)
 		_ = os.Setenv("KAFKA_HOST", "")
 		_ = os.Setenv("KNEU_BASE_URI", expectedConfig.kneuBaseUri)
-		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(expectedConfig.kneuClientId))
+		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(int(expectedConfig.kneuClientId)))
 		_ = os.Setenv("KNEU_CLIENT_SECRET", expectedConfig.kneuClientSecret)
 		_ = os.Setenv("JWT_SECRET_KEY", string(expectedConfig.jwtSecretKey))
 
@@ -168,7 +168,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		_ = os.Setenv("LISTEN", expectedConfig.listenAddress)
 		_ = os.Setenv("KAFKA_HOST", expectedConfig.kafkaHost)
 		_ = os.Setenv("KNEU_BASE_URI", "")
-		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(expectedConfig.kneuClientId))
+		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(int(expectedConfig.kneuClientId)))
 		_ = os.Setenv("KNEU_CLIENT_SECRET", expectedConfig.kneuClientSecret)
 		_ = os.Setenv("JWT_SECRET_KEY", string(expectedConfig.jwtSecretKey))
 
@@ -200,7 +200,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		_ = os.Setenv("LISTEN", expectedConfig.listenAddress)
 		_ = os.Setenv("KAFKA_HOST", expectedConfig.kafkaHost)
 		_ = os.Setenv("KNEU_BASE_URI", expectedConfig.kneuBaseUri)
-		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(expectedConfig.kneuClientId))
+		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(int(expectedConfig.kneuClientId)))
 		_ = os.Setenv("KNEU_CLIENT_SECRET", "")
 		_ = os.Setenv("JWT_SECRET_KEY", string(expectedConfig.jwtSecretKey))
 
@@ -218,7 +218,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		_ = os.Setenv("LISTEN", expectedConfig.listenAddress)
 		_ = os.Setenv("KAFKA_HOST", expectedConfig.kafkaHost)
 		_ = os.Setenv("KNEU_BASE_URI", expectedConfig.kneuBaseUri)
-		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(expectedConfig.kneuClientId))
+		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(int(expectedConfig.kneuClientId)))
 		_ = os.Setenv("KNEU_CLIENT_SECRET", expectedConfig.kneuClientSecret)
 		_ = os.Setenv("JWT_SECRET_KEY", "")
 

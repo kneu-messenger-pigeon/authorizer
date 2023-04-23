@@ -18,7 +18,7 @@ type Config struct {
 	kafkaHost     string
 
 	kneuBaseUri      string
-	kneuClientId     int
+	kneuClientId     uint
 	kneuClientSecret string
 
 	jwtSecretKey []byte
@@ -34,7 +34,7 @@ func loadConfig(envFilename string) (Config, error) {
 		}
 	}
 
-	kneuClientId, err := strconv.Atoi(os.Getenv("KNEU_CLIENT_ID"))
+	kneuClientId, err := strconv.ParseUint(os.Getenv("KNEU_CLIENT_ID"), 10, 0)
 	if err != nil || kneuClientId < 1 {
 		return Config{}, errors.New(fmt.Sprintf("Wrong KNEU client (%d) ID %s", kneuClientId, err))
 	}
@@ -45,7 +45,7 @@ func loadConfig(envFilename string) (Config, error) {
 		kafkaHost:     os.Getenv("KAFKA_HOST"),
 
 		kneuBaseUri:      os.Getenv("KNEU_BASE_URI"),
-		kneuClientId:     kneuClientId,
+		kneuClientId:     uint(kneuClientId),
 		kneuClientSecret: os.Getenv("KNEU_CLIENT_SECRET"),
 
 		jwtSecretKey: []byte(os.Getenv("JWT_SECRET_KEY")),

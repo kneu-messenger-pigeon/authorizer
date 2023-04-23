@@ -141,8 +141,8 @@ func TestCompleteAuth(t *testing.T) {
 		client := "telegram"
 		clientUserId := "999"
 		code := "qwerty1234"
-		userId := 999
-		studentId := 123
+		userId := uint(999)
+		studentId := uint(123)
 
 		oauthClient := kneu.NewMockOauthClientInterface(t)
 		apiClient := kneu.NewMockApiClientInterface(t)
@@ -168,7 +168,7 @@ func TestCompleteAuth(t *testing.T) {
 			Type:         "student",
 			StudentId:    studentId,
 			GroupId:      12,
-			Sex:          "male",
+			Gender:       "male",
 			TeacherId:    0,
 			DepartmentId: 0,
 		}
@@ -229,8 +229,8 @@ func TestCompleteAuth(t *testing.T) {
 		client := "telegram"
 		clientUserId := "999"
 		code := "qwerty1234"
-		userId := 999
-		studentId := 123
+		userId := uint(999)
+		studentId := uint(123)
 
 		oauthClient := kneu.NewMockOauthClientInterface(t)
 		apiClient := kneu.NewMockApiClientInterface(t)
@@ -256,7 +256,7 @@ func TestCompleteAuth(t *testing.T) {
 			Type:         "student",
 			StudentId:    studentId,
 			GroupId:      12,
-			Sex:          "female",
+			Gender:       "female",
 			TeacherId:    0,
 			DepartmentId: 0,
 		}
@@ -369,7 +369,7 @@ func TestCompleteAuth(t *testing.T) {
 		clientUserId := "999"
 		finalRedirectUri := "http://example.com"
 		code := "qwerty1234"
-		userId := 999
+		userId := uint(999)
 
 		oauthClient := kneu.NewMockOauthClientInterface(t)
 		apiClient := kneu.NewMockApiClientInterface(t)
@@ -393,7 +393,7 @@ func TestCompleteAuth(t *testing.T) {
 			Type:         "teacher",
 			StudentId:    0,
 			GroupId:      12,
-			Sex:          "male",
+			Gender:       "male",
 			TeacherId:    655,
 			DepartmentId: 0,
 		}
@@ -501,7 +501,7 @@ func TestCompleteAdminAuth(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		client := "telegram"
 		clientUserId := "999"
-		studentId := 123
+		studentId := uint(123)
 
 		writer := events.NewMockWriterInterface(t)
 
@@ -544,7 +544,8 @@ func TestCompleteAdminAuth(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
-		req, _ := http.NewRequest(http.MethodPost, "/admin", strings.NewReader("state="+state+"&student_id="+strconv.Itoa(studentId)))
+		postData := "state=" + state + "&student_id=" + strconv.FormatUint(uint64(studentId), 10)
+		req, _ := http.NewRequest(http.MethodPost, "/admin", strings.NewReader(postData))
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 		router.ServeHTTP(w, req)
