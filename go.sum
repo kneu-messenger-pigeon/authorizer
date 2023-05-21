@@ -48,6 +48,8 @@ github.com/kneu-messenger-pigeon/events v0.1.27 h1:d4KnkSJ5GUDc/LOFGG7+kcTgFu1U5
 github.com/kneu-messenger-pigeon/events v0.1.27/go.mod h1:yPgqpO/+XVOZmTdH8BB4wbE+2/keLNhjorMVzJwHQL8=
 github.com/kneu-messenger-pigeon/events v0.1.28 h1:kM1sEmu9GSaBSY0Cy3FyK8g+C8w2EqUxyblwpID9Xio=
 github.com/kneu-messenger-pigeon/events v0.1.28/go.mod h1:yPgqpO/+XVOZmTdH8BB4wbE+2/keLNhjorMVzJwHQL8=
+github.com/kneu-messenger-pigeon/events v0.1.30 h1:oMfziG1azDVCQAcIi1mmZV1sG+zXJ6uHD6KJxDLurZI=
+github.com/kneu-messenger-pigeon/events v0.1.30/go.mod h1:yPgqpO/+XVOZmTdH8BB4wbE+2/keLNhjorMVzJwHQL8=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
 github.com/kr/pretty v0.2.1/go.mod h1:ipq/a2n7PKx3OHsz4KJII5eveXtPO4qwEXGdVfWzfnI=
 github.com/kr/pretty v0.3.0 h1:WgNl7dwNpEZ6jJ9k1snq4pZsg7DOEN8hP9Xw0Tsjwk0=
