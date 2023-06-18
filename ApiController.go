@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"embed"
 	"encoding/json"
 	"errors"
 	"github.com/berejant/go-kneu"
@@ -10,6 +11,7 @@ import (
 	"github.com/kneu-messenger-pigeon/events"
 	"github.com/segmentio/kafka-go"
 	"html"
+	"html/template"
 	"io"
 	"net/http"
 	"strconv"
@@ -17,6 +19,9 @@ import (
 )
 
 const adminUserid = 1
+
+//go:embed templates/*.html
+var templates embed.FS
 
 type ApiController struct {
 	out              io.Writer
@@ -50,7 +55,10 @@ func (controller *ApiController) setupRouter() *gin.Engine {
 	completeUri := "/complete"
 	controller.oauthRedirectUrl = controller.config.publicUrl + completeUri
 
-	router.LoadHTMLGlob("templates/*")
+	router.SetHTMLTemplate(
+		template.Must(template.New("").ParseFS(templates, "templates/*.html")),
+	)
+
 	router.POST("/url", gin.BasicAuth(gin.Accounts{
 		"pigeon": controller.config.appSecret,
 	}), controller.getAuthUrl)

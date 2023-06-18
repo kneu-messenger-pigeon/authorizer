@@ -29,3 +29,6 @@ COPY --from=builder /app /app
 # Run
 USER nobody
 ENTRYPOINT ["/app"]
+
+HEALTHCHECK --start-period=5s --interval=30s --timeout=3s \
+  CMD wget --no-verbose --tries=1 --spider http://localhost${LISTEN}/healthcheck || exit 1
