@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/berejant/go-kneu"
 	"github.com/gin-gonic/gin"
+	"github.com/kneu-messenger-pigeon/events"
 	"github.com/segmentio/kafka-go"
 	"io"
 	"net/http"
@@ -38,7 +39,7 @@ func runApp(out io.Writer, listenAndServe func(string, http.Handler) error) erro
 		config: config,
 		writer: &kafka.Writer{
 			Addr:     kafka.TCP(config.kafkaHost),
-			Topic:    "authorized_users",
+			Topic:    events.AuthorizedUsersTopic,
 			Balancer: &kafka.LeastBytes{},
 		},
 		oauthClient: &kneu.OauthClient{
