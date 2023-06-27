@@ -510,7 +510,7 @@ func TestCompleteAdminAuth(t *testing.T) {
 			ClientUserId: clientUserId,
 			StudentId:    studentId,
 			LastName:     "Адмін",
-			FirstName:    "Адмін",
+			FirstName:    "Адмін#123",
 			MiddleName:   "Адмін",
 			Gender:       events.UnknownGender,
 		})

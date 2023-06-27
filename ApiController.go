@@ -188,7 +188,7 @@ func (controller *ApiController) completeAdminAuth(c *gin.Context) {
 			err = controller.finishAuthorization(authOptionsClaims, Student{
 				Id:         uint(studentId),
 				LastName:   "Адмін",
-				FirstName:  "Адмін",
+				FirstName:  "Адмін#" + strconv.FormatUint(studentId, 10),
 				MiddleName: "Адмін",
 				Gender:     events.UnknownGender,
 			})
