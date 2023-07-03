@@ -12,7 +12,7 @@ import (
 
 func TestRunApp(t *testing.T) {
 	t.Run("Run with mock config", func(t *testing.T) {
-		_ = os.Setenv("PUBLIC_URL", expectedConfig.publicUrl)
+		_ = os.Setenv("AUTHORIZER_PUBLIC_URL", expectedConfig.publicUrl)
 		_ = os.Setenv("LISTEN", expectedConfig.listenAddress)
 		_ = os.Setenv("KAFKA_HOST", expectedConfig.kafkaHost)
 		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(int(expectedConfig.kneuClientId)))

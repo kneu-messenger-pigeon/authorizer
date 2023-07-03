@@ -24,7 +24,7 @@ var expectedConfig = Config{
 
 func TestLoadConfigFromEnvVars(t *testing.T) {
 	t.Run("FromEnvVars", func(t *testing.T) {
-		_ = os.Setenv("PUBLIC_URL", expectedConfig.publicUrl)
+		_ = os.Setenv("AUTHORIZER_PUBLIC_URL", expectedConfig.publicUrl)
 		_ = os.Setenv("LISTEN", expectedConfig.listenAddress)
 		_ = os.Setenv("KAFKA_HOST", expectedConfig.kafkaHost)
 		_ = os.Setenv("KNEU_BASE_URI", expectedConfig.kneuBaseUri)
@@ -43,7 +43,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 	t.Run("FromFile", func(t *testing.T) {
 		var envFileContent string
 
-		envFileContent += fmt.Sprintf("PUBLIC_URL=%s\n", expectedConfig.publicUrl)
+		envFileContent += fmt.Sprintf("AUTHORIZER_PUBLIC_URL=%s\n", expectedConfig.publicUrl)
 		envFileContent += fmt.Sprintf("LISTEN=%s\n", expectedConfig.listenAddress)
 		envFileContent += fmt.Sprintf("KAFKA_HOST=%s\n", expectedConfig.kafkaHost)
 
@@ -67,7 +67,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 	})
 
 	t.Run("EmptyConfig", func(t *testing.T) {
-		_ = os.Setenv("PUBLIC_URL", "")
+		_ = os.Setenv("AUTHORIZER_PUBLIC_URL", "")
 		_ = os.Setenv("LISTEN", "")
 		_ = os.Setenv("KAFKA_HOST", "")
 		_ = os.Setenv("KNEU_BASE_URI", "")
@@ -110,7 +110,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 	})
 
 	t.Run("EmptyPublicUrl", func(t *testing.T) {
-		_ = os.Setenv("PUBLIC_URL", "")
+		_ = os.Setenv("AUTHORIZER_PUBLIC_URL", "")
 		_ = os.Setenv("LISTEN", expectedConfig.listenAddress)
 		_ = os.Setenv("KAFKA_HOST", expectedConfig.kafkaHost)
 		_ = os.Setenv("KNEU_BASE_URI", expectedConfig.kneuBaseUri)
@@ -128,7 +128,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 	})
 
 	t.Run("EmptyListen", func(t *testing.T) {
-		_ = os.Setenv("PUBLIC_URL", expectedConfig.publicUrl)
+		_ = os.Setenv("AUTHORIZER_PUBLIC_URL", expectedConfig.publicUrl)
 		_ = os.Setenv("LISTEN", "")
 		_ = os.Setenv("KAFKA_HOST", expectedConfig.kafkaHost)
 		_ = os.Setenv("KNEU_BASE_URI", expectedConfig.kneuBaseUri)
@@ -146,7 +146,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 	})
 
 	t.Run("EmptyKafka", func(t *testing.T) {
-		_ = os.Setenv("PUBLIC_URL", expectedConfig.publicUrl)
+		_ = os.Setenv("AUTHORIZER_PUBLIC_URL", expectedConfig.publicUrl)
 		_ = os.Setenv("LISTEN", expectedConfig.listenAddress)
 		_ = os.Setenv("KAFKA_HOST", "")
 		_ = os.Setenv("KNEU_BASE_URI", expectedConfig.kneuBaseUri)
@@ -164,7 +164,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 	})
 
 	t.Run("EmptyKneuApiHost", func(t *testing.T) {
-		_ = os.Setenv("PUBLIC_URL", expectedConfig.publicUrl)
+		_ = os.Setenv("AUTHORIZER_PUBLIC_URL", expectedConfig.publicUrl)
 		_ = os.Setenv("LISTEN", expectedConfig.listenAddress)
 		_ = os.Setenv("KAFKA_HOST", expectedConfig.kafkaHost)
 		_ = os.Setenv("KNEU_BASE_URI", "")
@@ -178,7 +178,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 	})
 
 	t.Run("EmptyKneuClientId", func(t *testing.T) {
-		_ = os.Setenv("PUBLIC_URL", expectedConfig.publicUrl)
+		_ = os.Setenv("AUTHORIZER_PUBLIC_URL", expectedConfig.publicUrl)
 		_ = os.Setenv("LISTEN", expectedConfig.listenAddress)
 		_ = os.Setenv("KAFKA_HOST", expectedConfig.kafkaHost)
 		_ = os.Setenv("KNEU_BASE_URI", expectedConfig.kneuBaseUri)
@@ -196,7 +196,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 	})
 
 	t.Run("EmptyKneuClientSecret", func(t *testing.T) {
-		_ = os.Setenv("PUBLIC_URL", expectedConfig.publicUrl)
+		_ = os.Setenv("AUTHORIZER_PUBLIC_URL", expectedConfig.publicUrl)
 		_ = os.Setenv("LISTEN", expectedConfig.listenAddress)
 		_ = os.Setenv("KAFKA_HOST", expectedConfig.kafkaHost)
 		_ = os.Setenv("KNEU_BASE_URI", expectedConfig.kneuBaseUri)
@@ -214,7 +214,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 	})
 
 	t.Run("EmptyJwtSecretKeyExpectDefault", func(t *testing.T) {
-		_ = os.Setenv("PUBLIC_URL", expectedConfig.publicUrl)
+		_ = os.Setenv("AUTHORIZER_PUBLIC_URL", expectedConfig.publicUrl)
 		_ = os.Setenv("LISTEN", expectedConfig.listenAddress)
 		_ = os.Setenv("KAFKA_HOST", expectedConfig.kafkaHost)
 		_ = os.Setenv("KNEU_BASE_URI", expectedConfig.kneuBaseUri)
@@ -229,7 +229,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 	})
 
 	t.Run("NotExistConfigFile", func(t *testing.T) {
-		_ = os.Setenv("PUBLIC_URL", "")
+		_ = os.Setenv("AUTHORIZER_PUBLIC_URL", "")
 		_ = os.Setenv("LISTEN", "")
 		_ = os.Setenv("KAFKA_HOST", "")
 		_ = os.Setenv("KNEU_BASE_URI", "")

@@ -40,7 +40,7 @@ func loadConfig(envFilename string) (Config, error) {
 	}
 
 	config := Config{
-		publicUrl:     strings.TrimRight(os.Getenv("PUBLIC_URL"), "/"),
+		publicUrl:     strings.TrimRight(os.Getenv("AUTHORIZER_PUBLIC_URL"), "/"),
 		listenAddress: os.Getenv("LISTEN"),
 		kafkaHost:     os.Getenv("KAFKA_HOST"),
 
@@ -54,7 +54,7 @@ func loadConfig(envFilename string) (Config, error) {
 	}
 
 	if config.publicUrl == "" {
-		return Config{}, errors.New("empty PUBLIC_URL")
+		return Config{}, errors.New("empty AUTHORIZER_PUBLIC_URL")
 	}
 
 	if config.listenAddress == "" {
