@@ -5,8 +5,9 @@ on:
     branches: ['main']
 
 jobs:
-  build:
+  release:
     permissions:
       contents: read
       packages: write
     uses: kneu-messenger-pigeon/github-workflows/.github/workflows/release.yaml@main
+    secrets: inherit
