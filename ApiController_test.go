@@ -8,6 +8,7 @@ import (
 	"github.com/berejant/go-kneu"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/kneu-messenger-pigeon/events"
+	"github.com/kneu-messenger-pigeon/events/mocks"
 	"github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -147,7 +148,7 @@ func TestCompleteAuth(t *testing.T) {
 		oauthClient := kneu.NewMockOauthClientInterface(t)
 		apiClient := kneu.NewMockApiClientInterface(t)
 
-		writer := events.NewMockWriterInterface(t)
+		writer := mocks.NewWriterInterface(t)
 
 		tokenResponse := kneu.OauthTokenResponse{
 			AccessToken: "test-access-token",
@@ -235,7 +236,7 @@ func TestCompleteAuth(t *testing.T) {
 		oauthClient := kneu.NewMockOauthClientInterface(t)
 		apiClient := kneu.NewMockApiClientInterface(t)
 
-		writer := events.NewMockWriterInterface(t)
+		writer := mocks.NewWriterInterface(t)
 
 		tokenResponse := kneu.OauthTokenResponse{
 			AccessToken: "test-access-tokem",
@@ -503,7 +504,7 @@ func TestCompleteAdminAuth(t *testing.T) {
 		clientUserId := "999"
 		studentId := uint(123)
 
-		writer := events.NewMockWriterInterface(t)
+		writer := mocks.NewWriterInterface(t)
 
 		payload, _ := json.Marshal(events.UserAuthorizedEvent{
 			Client:       client,
