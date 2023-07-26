@@ -164,7 +164,7 @@ func (controller *ApiController) responseWithAdminAuthFrom(c *gin.Context, state
 
 	c.HTML(http.StatusOK, "auth_admin.html", gin.H{
 		"state":     html.EscapeString(state),
-		"actionUrl": "/admin",
+		"actionUrl": "admin",
 	})
 }
 

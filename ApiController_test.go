@@ -361,7 +361,7 @@ func TestCompleteAuth(t *testing.T) {
 		body := w.Body.String()
 
 		assert.Contains(t, body, "state")
-		assert.Contains(t, body, `action="/admin"`)
+		assert.Contains(t, body, `action="admin"`)
 		assert.Contains(t, body, `name="student_id"`)
 	})
 
@@ -588,7 +588,7 @@ func TestCompleteAdminAuth(t *testing.T) {
 		body := w.Body.String()
 
 		assert.Contains(t, body, "state")
-		assert.Contains(t, body, `action="/admin"`)
+		assert.Contains(t, body, `action="admin"`)
 		assert.Contains(t, body, `name="student_id"`)
 	})
 
