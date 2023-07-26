@@ -68,7 +68,7 @@ func (controller *ApiController) setupRouter() *gin.Engine {
 
 	router.StaticFile("/close.html", "./templates/close.html")
 
-	router.GET("/healthcheck", func(c *gin.Context) {
+	router.Any("/healthcheck", func(c *gin.Context) {
 		c.String(http.StatusOK, "health")
 	})
 
