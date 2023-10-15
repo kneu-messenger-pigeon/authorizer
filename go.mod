@@ -3,18 +3,18 @@ module authorizer
 go 1.19
 
 require (
+	github.com/VictoriaMetrics/metrics v1.24.0
 	github.com/berejant/go-kneu v0.1.7
 	github.com/gin-gonic/gin v1.8.2
 	github.com/golang-jwt/jwt/v5 v5.0.0-rc.1
 	github.com/joho/godotenv v1.4.0
 	github.com/kneu-messenger-pigeon/events v0.1.41
-	github.com/kneu-messenger-pigeon/victoria-metrics-init v0.1.1
+	github.com/kneu-messenger-pigeon/victoria-metrics-init v0.1.2
 	github.com/segmentio/kafka-go v0.4.38
 	github.com/stretchr/testify v1.8.4
 )
 
 require (
-	github.com/VictoriaMetrics/metrics v1.24.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect

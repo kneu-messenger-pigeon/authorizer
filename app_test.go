@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"errors"
+	victoriaMetricsInit "github.com/kneu-messenger-pigeon/victoria-metrics-init"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"os"
@@ -30,6 +31,9 @@ func TestRunApp(t *testing.T) {
 
 		assert.NoError(t, err, "Expected for TooManyError, got %s", err)
 		assert.Equal(t, expectedConfig.listenAddress, actualListen)
+
+		assert.Equal(t, "authorizer", victoriaMetricsInit.LastInstance)
+
 	})
 
 	t.Run("Run with wrong env file", func(t *testing.T) {
