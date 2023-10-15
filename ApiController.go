@@ -76,6 +76,8 @@ func (controller *ApiController) setupRouter() *gin.Engine {
 }
 
 func (controller *ApiController) getAuthUrl(c *gin.Context) {
+	getAuthUrlRequestsTotal.Inc()
+
 	var err error
 	var state string
 
@@ -99,6 +101,8 @@ func (controller *ApiController) getAuthUrl(c *gin.Context) {
 }
 
 func (controller *ApiController) completeAuth(c *gin.Context) {
+	completeAuthRequestsTotal.Inc()
+
 	var authOptionsClaims AuthOptionsClaims
 	var tokenResponse kneu.OauthTokenResponse
 	var userMeResponse kneu.UserMeResponse

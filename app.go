@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/VictoriaMetrics/metrics"
 	"github.com/berejant/go-kneu"
 	"github.com/gin-gonic/gin"
 	"github.com/kneu-messenger-pigeon/events"
+	"github.com/kneu-messenger-pigeon/victoria-metrics-init"
 	"github.com/segmentio/kafka-go"
 	"io"
 	"net/http"
@@ -12,6 +14,9 @@ import (
 )
 
 const ExitCodeMainError = 1
+
+var getAuthUrlRequestsTotal = metrics.NewCounter("get_auth_url_requests_total")
+var completeAuthRequestsTotal = metrics.NewCounter("complete_auth_requests_total")
 
 func runApp(out io.Writer, listenAndServe func(string, http.Handler) error) error {
 	envFilename := ""
@@ -23,6 +28,8 @@ func runApp(out io.Writer, listenAndServe func(string, http.Handler) error) erro
 	if err != nil {
 		return err
 	}
+
+	victoriaMetricsInit.InitMetrics("authorizer")
 
 	gin.SetMode(gin.ReleaseMode)
 
