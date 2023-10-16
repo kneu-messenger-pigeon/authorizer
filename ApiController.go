@@ -31,6 +31,8 @@ type ApiController struct {
 	apiClientFactory func(token string) kneu.ApiClientInterface
 
 	oauthRedirectUrl string
+
+	countCache *countCache
 }
 
 type AuthOptionsClaims struct {
@@ -101,7 +103,6 @@ func (controller *ApiController) getAuthUrl(c *gin.Context) {
 }
 
 func (controller *ApiController) completeAuth(c *gin.Context) {
-	completeAuthRequestsTotal.Inc()
 
 	var authOptionsClaims AuthOptionsClaims
 	var tokenResponse kneu.OauthTokenResponse
@@ -109,6 +110,12 @@ func (controller *ApiController) completeAuth(c *gin.Context) {
 
 	code := c.Query("code")
 	state := c.Query("state")
+
+	stateReceivedCount := controller.countCache.Get(&state)
+	controller.countCache.Set(&state, stateReceivedCount+1)
+	if stateReceivedCount == 0 {
+		completeAuthRequestsTotal.Inc()
+	}
 
 	authOptionsClaims, err := controller.parseState(state)
 	if err == nil {

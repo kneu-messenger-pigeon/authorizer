@@ -200,6 +200,7 @@ func TestCompleteAuth(t *testing.T) {
 				assert.Equal(t, tokenResponse.AccessToken, token)
 				return apiClient
 			},
+			countCache: NewCountCache(1),
 		}
 
 		router := (controller).setupRouter()
@@ -288,6 +289,7 @@ func TestCompleteAuth(t *testing.T) {
 				assert.Equal(t, tokenResponse.AccessToken, token)
 				return apiClient
 			},
+			countCache: NewCountCache(1),
 		}
 
 		router := (controller).setupRouter()
@@ -334,6 +336,7 @@ func TestCompleteAuth(t *testing.T) {
 			out:         &bytes.Buffer{},
 			config:      config,
 			oauthClient: oauthClient,
+			countCache:  NewCountCache(1),
 		}
 
 		router := (controller).setupRouter()
@@ -410,6 +413,7 @@ func TestCompleteAuth(t *testing.T) {
 				assert.Equal(t, tokenResponse.AccessToken, token)
 				return apiClient
 			},
+			countCache: NewCountCache(1),
 		}
 
 		router := (controller).setupRouter()
@@ -460,6 +464,7 @@ func TestCompleteAuth(t *testing.T) {
 				assert.Equal(t, tokenResponse.AccessToken, token)
 				return apiClient
 			},
+			countCache: NewCountCache(1),
 		}
 
 		router := (controller).setupRouter()

@@ -52,6 +52,8 @@ func runApp(out io.Writer, listenAndServe func(string, http.Handler) error) erro
 				AccessToken: token,
 			}
 		},
+
+		countCache: NewCountCache(1),
 	}
 
 	apiController.apiClientFactory("test")
