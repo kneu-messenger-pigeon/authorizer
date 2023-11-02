@@ -138,358 +138,609 @@ func TestCompleteAuth(t *testing.T) {
 		appSecret:        "test-secret",
 	}
 
-	t.Run("success custom redirect", func(t *testing.T) {
-		client := "telegram"
-		clientUserId := "999"
-		code := "qwerty1234"
-		userId := uint(999)
-		studentId := uint(123)
+	t.Run("success", func(t *testing.T) {
+		t.Run("success custom redirect", func(t *testing.T) {
+			client := "telegram"
+			clientUserId := "999"
+			code := "qwerty1234"
+			userId := uint(999)
+			studentId := uint(123)
 
-		oauthClient := kneu.NewMockOauthClientInterface(t)
-		apiClient := kneu.NewMockApiClientInterface(t)
+			oauthClient := kneu.NewMockOauthClientInterface(t)
+			apiClient := kneu.NewMockApiClientInterface(t)
 
-		writer := mocks.NewWriterInterface(t)
+			writer := mocks.NewWriterInterface(t)
 
-		tokenResponse := kneu.OauthTokenResponse{
-			AccessToken: "test-access-token",
-			TokenType:   "Bearer",
-			ExpiresIn:   7200,
-			UserId:      userId,
-		}
+			tokenResponse := kneu.OauthTokenResponse{
+				AccessToken: "test-access-token",
+				TokenType:   "Bearer",
+				ExpiresIn:   7200,
+				UserId:      userId,
+			}
 
-		oauthClient.On("GetOauthToken", config.publicUrl+"/complete", code).Return(tokenResponse, nil)
+			oauthClient.On("GetOauthToken", config.publicUrl+"/complete", code).Return(tokenResponse, nil)
 
-		userMeResponse := kneu.UserMeResponse{
-			Id:           userId,
-			Email:        "example@kneu.edu.ua",
-			Name:         "Коваль Валера Павлович",
-			LastName:     "Коваль",
-			FirstName:    "Валера",
-			MiddleName:   "Павлович",
-			Type:         "student",
-			StudentId:    studentId,
-			GroupId:      12,
-			Gender:       "male",
-			TeacherId:    0,
-			DepartmentId: 0,
-		}
-		apiClient.On("GetUserMe").Return(userMeResponse, nil)
+			userMeResponse := kneu.UserMeResponse{
+				Id:           userId,
+				Email:        "example@kneu.edu.ua",
+				Name:         "Коваль Валера Павлович",
+				LastName:     "Коваль",
+				FirstName:    "Валера",
+				MiddleName:   "Павлович",
+				Type:         "student",
+				StudentId:    studentId,
+				GroupId:      12,
+				Gender:       "male",
+				TeacherId:    0,
+				DepartmentId: 0,
+			}
+			apiClient.On("GetUserMe").Return(userMeResponse, nil)
 
-		payload, _ := json.Marshal(events.UserAuthorizedEvent{
-			Client:       client,
-			ClientUserId: clientUserId,
-			StudentId:    studentId,
-			LastName:     "Коваль",
-			FirstName:    "Валера",
-			MiddleName:   "Павлович",
-			Gender:       events.Male,
+			payload, _ := json.Marshal(events.UserAuthorizedEvent{
+				Client:       client,
+				ClientUserId: clientUserId,
+				StudentId:    studentId,
+				LastName:     "Коваль",
+				FirstName:    "Валера",
+				MiddleName:   "Павлович",
+				Gender:       events.Male,
+			})
+
+			expectedMessage := kafka.Message{
+				Key:   []byte(events.UserAuthorizedEventName),
+				Value: payload,
+			}
+			writer.On("WriteMessages", context.Background(), expectedMessage).Return(nil)
+
+			controller := &ApiController{
+				out:         &bytes.Buffer{},
+				writer:      writer,
+				config:      config,
+				oauthClient: oauthClient,
+				apiClientFactory: func(token string) kneu.ApiClientInterface {
+					assert.Equal(t, tokenResponse.AccessToken, token)
+					return apiClient
+				},
+				countCache: NewCountCache(1),
+			}
+
+			router := (controller).setupRouter()
+
+			authOptionsClaims := AuthOptionsClaims{
+				RegisteredClaims: jwt.RegisteredClaims{
+					Issuer:    "pigeonAuthorizer",
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+				},
+				Client:       client,
+				ClientUserId: clientUserId,
+				RedirectUri:  "https://example.com/redirect",
+				KneuUserId:   0,
+			}
+
+			state, _ := controller.buildState(authOptionsClaims)
+
+			w := httptest.NewRecorder()
+			req, _ := http.NewRequest(http.MethodGet, "/complete?code="+code+"&state="+state, nil)
+
+			router.ServeHTTP(w, req)
+
+			assert.Equal(t, http.StatusFound, w.Code)
+			assert.Equal(t, authOptionsClaims.RedirectUri, w.Header().Get("Location"))
 		})
 
-		expectedMessage := kafka.Message{
-			Key:   []byte(events.UserAuthorizedEventName),
-			Value: payload,
-		}
-		writer.On("WriteMessages", context.Background(), expectedMessage).Return(nil)
+		t.Run("success default redirect", func(t *testing.T) {
+			client := "telegram"
+			clientUserId := "999"
+			code := "qwerty1234"
+			userId := uint(999)
+			studentId := uint(123)
 
-		controller := &ApiController{
-			out:         &bytes.Buffer{},
-			writer:      writer,
-			config:      config,
-			oauthClient: oauthClient,
-			apiClientFactory: func(token string) kneu.ApiClientInterface {
-				assert.Equal(t, tokenResponse.AccessToken, token)
-				return apiClient
-			},
-			countCache: NewCountCache(1),
-		}
+			oauthClient := kneu.NewMockOauthClientInterface(t)
+			apiClient := kneu.NewMockApiClientInterface(t)
 
-		router := (controller).setupRouter()
+			writer := mocks.NewWriterInterface(t)
 
-		authOptionsClaims := AuthOptionsClaims{
-			RegisteredClaims: jwt.RegisteredClaims{
-				Issuer:    "pigeonAuthorizer",
-				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
-			},
-			Client:       client,
-			ClientUserId: clientUserId,
-			RedirectUri:  "https://example.com/redirect",
-			KneuUserId:   0,
-		}
+			tokenResponse := kneu.OauthTokenResponse{
+				AccessToken: "test-access-tokem",
+				TokenType:   "Bearer",
+				ExpiresIn:   7200,
+				UserId:      userId,
+			}
 
-		state, _ := controller.buildState(authOptionsClaims)
+			oauthClient.On("GetOauthToken", config.publicUrl+"/complete", code).Return(tokenResponse, nil)
 
-		w := httptest.NewRecorder()
-		req, _ := http.NewRequest(http.MethodGet, "/complete?code="+code+"&state="+state, nil)
+			userMeResponse := kneu.UserMeResponse{
+				Id:           userId,
+				Email:        "example@kneu.edu.ua",
+				Name:         "Коваль Валера Павлович",
+				LastName:     "Коваль",
+				FirstName:    "Валера",
+				MiddleName:   "Павлович",
+				Type:         "student",
+				StudentId:    studentId,
+				GroupId:      12,
+				Gender:       "female",
+				TeacherId:    0,
+				DepartmentId: 0,
+			}
+			apiClient.On("GetUserMe").Return(userMeResponse, nil)
 
-		router.ServeHTTP(w, req)
+			payload, _ := json.Marshal(events.UserAuthorizedEvent{
+				Client:       client,
+				ClientUserId: clientUserId,
+				StudentId:    studentId,
+				LastName:     "Коваль",
+				FirstName:    "Валера",
+				MiddleName:   "Павлович",
+				Gender:       events.Female,
+			})
 
-		assert.Equal(t, http.StatusFound, w.Code)
-		assert.Equal(t, authOptionsClaims.RedirectUri, w.Header().Get("Location"))
-	})
+			expectedMessage := kafka.Message{
+				Key:   []byte(events.UserAuthorizedEventName),
+				Value: payload,
+			}
+			writer.On("WriteMessages", context.Background(), expectedMessage).Return(nil)
 
-	t.Run("success default redirect", func(t *testing.T) {
-		client := "telegram"
-		clientUserId := "999"
-		code := "qwerty1234"
-		userId := uint(999)
-		studentId := uint(123)
+			controller := &ApiController{
+				out:         &bytes.Buffer{},
+				writer:      writer,
+				config:      config,
+				oauthClient: oauthClient,
+				apiClientFactory: func(token string) kneu.ApiClientInterface {
+					assert.Equal(t, tokenResponse.AccessToken, token)
+					return apiClient
+				},
+				countCache: NewCountCache(1),
+			}
 
-		oauthClient := kneu.NewMockOauthClientInterface(t)
-		apiClient := kneu.NewMockApiClientInterface(t)
+			router := (controller).setupRouter()
 
-		writer := mocks.NewWriterInterface(t)
+			authOptionsClaims := AuthOptionsClaims{
+				RegisteredClaims: jwt.RegisteredClaims{
+					Issuer:    "pigeonAuthorizer",
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+				},
+				Client:       client,
+				ClientUserId: clientUserId,
+				RedirectUri:  "",
+				KneuUserId:   0,
+			}
 
-		tokenResponse := kneu.OauthTokenResponse{
-			AccessToken: "test-access-tokem",
-			TokenType:   "Bearer",
-			ExpiresIn:   7200,
-			UserId:      userId,
-		}
+			state, _ := controller.buildState(authOptionsClaims)
 
-		oauthClient.On("GetOauthToken", config.publicUrl+"/complete", code).Return(tokenResponse, nil)
+			w := httptest.NewRecorder()
+			req, _ := http.NewRequest(http.MethodGet, "/complete?code="+code+"&state="+state, nil)
 
-		userMeResponse := kneu.UserMeResponse{
-			Id:           userId,
-			Email:        "example@kneu.edu.ua",
-			Name:         "Коваль Валера Павлович",
-			LastName:     "Коваль",
-			FirstName:    "Валера",
-			MiddleName:   "Павлович",
-			Type:         "student",
-			StudentId:    studentId,
-			GroupId:      12,
-			Gender:       "female",
-			TeacherId:    0,
-			DepartmentId: 0,
-		}
-		apiClient.On("GetUserMe").Return(userMeResponse, nil)
+			router.ServeHTTP(w, req)
 
-		payload, _ := json.Marshal(events.UserAuthorizedEvent{
-			Client:       client,
-			ClientUserId: clientUserId,
-			StudentId:    studentId,
-			LastName:     "Коваль",
-			FirstName:    "Валера",
-			MiddleName:   "Павлович",
-			Gender:       events.Female,
+			assert.Equal(t, http.StatusFound, w.Code)
+			assert.Equal(t, config.publicUrl+"/close.html", w.Header().Get("Location"))
 		})
 
-		expectedMessage := kafka.Message{
-			Key:   []byte(events.UserAuthorizedEventName),
-			Value: payload,
-		}
-		writer.On("WriteMessages", context.Background(), expectedMessage).Return(nil)
+		t.Run("success_admin", func(t *testing.T) {
+			client := "telegram"
+			clientUserId := "999"
+			code := "qwerty1234"
 
-		controller := &ApiController{
-			out:         &bytes.Buffer{},
-			writer:      writer,
-			config:      config,
-			oauthClient: oauthClient,
-			apiClientFactory: func(token string) kneu.ApiClientInterface {
-				assert.Equal(t, tokenResponse.AccessToken, token)
-				return apiClient
-			},
-			countCache: NewCountCache(1),
-		}
+			oauthClient := kneu.NewMockOauthClientInterface(t)
 
-		router := (controller).setupRouter()
+			tokenResponse := kneu.OauthTokenResponse{
+				AccessToken: "test-access-tokem",
+				TokenType:   "Bearer",
+				ExpiresIn:   7200,
+				UserId:      adminUserid,
+			}
 
-		authOptionsClaims := AuthOptionsClaims{
-			RegisteredClaims: jwt.RegisteredClaims{
-				Issuer:    "pigeonAuthorizer",
-				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
-			},
-			Client:       client,
-			ClientUserId: clientUserId,
-			RedirectUri:  "",
-			KneuUserId:   0,
-		}
+			oauthClient.On("GetOauthToken", config.publicUrl+"/complete", code).Return(tokenResponse, nil)
 
-		state, _ := controller.buildState(authOptionsClaims)
+			controller := &ApiController{
+				out:         &bytes.Buffer{},
+				config:      config,
+				oauthClient: oauthClient,
+				countCache:  NewCountCache(1),
+			}
 
-		w := httptest.NewRecorder()
-		req, _ := http.NewRequest(http.MethodGet, "/complete?code="+code+"&state="+state, nil)
+			router := (controller).setupRouter()
 
-		router.ServeHTTP(w, req)
+			authOptionsClaims := AuthOptionsClaims{
+				RegisteredClaims: jwt.RegisteredClaims{
+					Issuer:    "pigeonAuthorizer",
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+				},
+				Client:       client,
+				ClientUserId: clientUserId,
+				RedirectUri:  "",
+				KneuUserId:   0,
+			}
 
-		assert.Equal(t, http.StatusFound, w.Code)
-		assert.Equal(t, config.publicUrl+"/close.html", w.Header().Get("Location"))
-	})
+			state, _ := controller.buildState(authOptionsClaims)
 
-	t.Run("success_admin", func(t *testing.T) {
-		client := "telegram"
-		clientUserId := "999"
-		code := "qwerty1234"
+			w := httptest.NewRecorder()
+			req, _ := http.NewRequest(http.MethodGet, "/complete?code="+code+"&state="+state, nil)
 
-		oauthClient := kneu.NewMockOauthClientInterface(t)
+			router.ServeHTTP(w, req)
 
-		tokenResponse := kneu.OauthTokenResponse{
-			AccessToken: "test-access-tokem",
-			TokenType:   "Bearer",
-			ExpiresIn:   7200,
-			UserId:      adminUserid,
-		}
+			assert.Equal(t, http.StatusOK, w.Code)
 
-		oauthClient.On("GetOauthToken", config.publicUrl+"/complete", code).Return(tokenResponse, nil)
+			body := w.Body.String()
 
-		controller := &ApiController{
-			out:         &bytes.Buffer{},
-			config:      config,
-			oauthClient: oauthClient,
-			countCache:  NewCountCache(1),
-		}
-
-		router := (controller).setupRouter()
-
-		authOptionsClaims := AuthOptionsClaims{
-			RegisteredClaims: jwt.RegisteredClaims{
-				Issuer:    "pigeonAuthorizer",
-				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
-			},
-			Client:       client,
-			ClientUserId: clientUserId,
-			RedirectUri:  "",
-			KneuUserId:   0,
-		}
-
-		state, _ := controller.buildState(authOptionsClaims)
-
-		w := httptest.NewRecorder()
-		req, _ := http.NewRequest(http.MethodGet, "/complete?code="+code+"&state="+state, nil)
-
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusOK, w.Code)
-
-		body := w.Body.String()
-
-		assert.Contains(t, body, "state")
-		assert.Contains(t, body, `action="`+config.publicUrl+`/admin"`)
-		assert.Contains(t, body, `name="student_id"`)
-	})
-
-	t.Run("error_not_student", func(t *testing.T) {
-		client := "telegram"
-		clientUserId := "999"
-		finalRedirectUri := "http://example.com"
-		code := "qwerty1234"
-		userId := uint(999)
-
-		oauthClient := kneu.NewMockOauthClientInterface(t)
-		apiClient := kneu.NewMockApiClientInterface(t)
-
-		tokenResponse := kneu.OauthTokenResponse{
-			AccessToken: "test-access-tokem",
-			TokenType:   "Bearer",
-			ExpiresIn:   7200,
-			UserId:      userId,
-		}
-
-		oauthClient.On("GetOauthToken", config.publicUrl+"/complete", code).Return(tokenResponse, nil)
-
-		userMeResponse := kneu.UserMeResponse{
-			Id:           userId,
-			Email:        "example@kneu.edu.ua",
-			Name:         "Коваль Валера Павлович",
-			LastName:     "Коваль",
-			FirstName:    "Валера",
-			MiddleName:   "Павлович",
-			Type:         "teacher",
-			StudentId:    0,
-			GroupId:      12,
-			Gender:       "male",
-			TeacherId:    655,
-			DepartmentId: 0,
-		}
-		apiClient.On("GetUserMe").Return(userMeResponse, nil)
-
-		oauthClient.On("GetOauthToken", config.publicUrl+"/complete", code).Return(tokenResponse, nil)
-
-		controller := &ApiController{
-			out:         &bytes.Buffer{},
-			config:      config,
-			oauthClient: oauthClient,
-			apiClientFactory: func(token string) kneu.ApiClientInterface {
-				assert.Equal(t, tokenResponse.AccessToken, token)
-				return apiClient
-			},
-			countCache: NewCountCache(1),
-		}
-
-		router := (controller).setupRouter()
-
-		authOptionsClaims := AuthOptionsClaims{
-			RegisteredClaims: jwt.RegisteredClaims{
-				Issuer:    "pigeonAuthorizer",
-				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
-			},
-			Client:       client,
-			ClientUserId: clientUserId,
-			RedirectUri:  finalRedirectUri,
-			KneuUserId:   0,
-		}
-
-		state, _ := controller.buildState(authOptionsClaims)
-
-		w := httptest.NewRecorder()
-		req, _ := http.NewRequest(http.MethodGet, "/complete?code="+code+"&state="+state, nil)
-
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusBadRequest, w.Code)
-		assert.Contains(t, w.Body.String(), "Не вдалося завершити авторизацію")
-		assert.Contains(t, w.Body.String(), "Вам потрібно використати особистий кабінет студента")
+			assert.Contains(t, body, "state")
+			assert.Contains(t, body, `action="`+config.publicUrl+`/admin"`)
+			assert.Contains(t, body, `name="student_id"`)
+		})
 	})
 
 	t.Run("error", func(t *testing.T) {
-		client := "telegram"
-		clientUserId := "999"
-		finalRedirectUri := "http://example.com"
-		code := "qwerty1234"
+		t.Run("error_not_student", func(t *testing.T) {
+			client := "telegram"
+			clientUserId := "999"
+			finalRedirectUri := "http://example.com"
+			code := "qwerty1234"
+			userId := uint(999)
 
-		oauthClient := kneu.NewMockOauthClientInterface(t)
-		apiClient := kneu.NewMockApiClientInterface(t)
+			oauthClient := kneu.NewMockOauthClientInterface(t)
+			apiClient := kneu.NewMockApiClientInterface(t)
 
-		tokenResponse := kneu.OauthTokenResponse{}
+			tokenResponse := kneu.OauthTokenResponse{
+				AccessToken: "test-access-tokem",
+				TokenType:   "Bearer",
+				ExpiresIn:   7200,
+				UserId:      userId,
+			}
 
-		error := errors.New("dummy error")
+			oauthClient.On("GetOauthToken", config.publicUrl+"/complete", code).Return(tokenResponse, nil)
 
-		oauthClient.On("GetOauthToken", config.publicUrl+"/complete", code).Return(tokenResponse, error)
+			userMeResponse := kneu.UserMeResponse{
+				Id:           userId,
+				Email:        "example@kneu.edu.ua",
+				Name:         "Коваль Валера Павлович",
+				LastName:     "Коваль",
+				FirstName:    "Валера",
+				MiddleName:   "Павлович",
+				Type:         "teacher",
+				StudentId:    0,
+				GroupId:      12,
+				Gender:       "male",
+				TeacherId:    655,
+				DepartmentId: 0,
+			}
+			apiClient.On("GetUserMe").Return(userMeResponse, nil)
 
-		controller := &ApiController{
-			out:         &bytes.Buffer{},
-			config:      config,
-			oauthClient: oauthClient,
-			apiClientFactory: func(token string) kneu.ApiClientInterface {
-				assert.Equal(t, tokenResponse.AccessToken, token)
-				return apiClient
-			},
-			countCache: NewCountCache(1),
-		}
+			oauthClient.On("GetOauthToken", config.publicUrl+"/complete", code).Return(tokenResponse, nil)
 
-		router := (controller).setupRouter()
+			controller := &ApiController{
+				out:         &bytes.Buffer{},
+				config:      config,
+				oauthClient: oauthClient,
+				apiClientFactory: func(token string) kneu.ApiClientInterface {
+					assert.Equal(t, tokenResponse.AccessToken, token)
+					return apiClient
+				},
+				countCache: NewCountCache(1),
+			}
 
-		authOptionsClaims := AuthOptionsClaims{
-			RegisteredClaims: jwt.RegisteredClaims{
-				Issuer:    "pigeonAuthorizer",
-				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
-			},
-			Client:       client,
-			ClientUserId: clientUserId,
-			RedirectUri:  finalRedirectUri,
-			KneuUserId:   0,
-		}
+			router := (controller).setupRouter()
 
-		state, _ := controller.buildState(authOptionsClaims)
+			authOptionsClaims := AuthOptionsClaims{
+				RegisteredClaims: jwt.RegisteredClaims{
+					Issuer:    "pigeonAuthorizer",
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+				},
+				Client:       client,
+				ClientUserId: clientUserId,
+				RedirectUri:  finalRedirectUri,
+				KneuUserId:   0,
+			}
 
-		w := httptest.NewRecorder()
-		req, _ := http.NewRequest(http.MethodGet, "/complete?code="+code+"&state="+state, nil)
+			state, _ := controller.buildState(authOptionsClaims)
 
-		router.ServeHTTP(w, req)
+			w := httptest.NewRecorder()
+			req, _ := http.NewRequest(http.MethodGet, "/complete?code="+code+"&state="+state, nil)
 
-		assert.Equal(t, http.StatusBadRequest, w.Code)
-		assert.Contains(t, w.Body.String(), "Не вдалося завершити авторизацію")
+			router.ServeHTTP(w, req)
+
+			assert.Equal(t, http.StatusBadRequest, w.Code)
+			assert.Contains(t, w.Body.String(), "Не вдалося завершити авторизацію")
+			assert.Contains(t, w.Body.String(), "Вам потрібно використати особистий кабінет студента")
+		})
+
+		t.Run("error_wrong_state", func(t *testing.T) {
+			code := "qwerty1234"
+
+			oauthClient := kneu.NewMockOauthClientInterface(t)
+			apiClient := kneu.NewMockApiClientInterface(t)
+
+			tokenResponse := kneu.OauthTokenResponse{}
+
+			out := &bytes.Buffer{}
+			controller := &ApiController{
+				out:         out,
+				config:      config,
+				oauthClient: oauthClient,
+				apiClientFactory: func(token string) kneu.ApiClientInterface {
+					assert.Equal(t, tokenResponse.AccessToken, token)
+					return apiClient
+				},
+				countCache: NewCountCache(1),
+			}
+
+			router := (controller).setupRouter()
+
+			state := "ahahahahahahahah"
+
+			w := httptest.NewRecorder()
+			req, _ := http.NewRequest(http.MethodGet, "/complete?code="+code+"&state="+state, nil)
+
+			router.ServeHTTP(w, req)
+
+			assert.Equal(t, http.StatusBadRequest, w.Code)
+			assert.Contains(t, w.Body.String(), "Не вдалося завершити авторизацію")
+			assert.Contains(t, w.Body.String(), "Невірний стан")
+			assert.Contains(t, out.String(), "Failed to parse state")
+		})
+
+		t.Run("error_fail_to_get_token", func(t *testing.T) {
+			client := "telegram"
+			clientUserId := "999"
+			finalRedirectUri := "http://example.com"
+			code := "qwerty1234"
+
+			oauthClient := kneu.NewMockOauthClientInterface(t)
+			apiClient := kneu.NewMockApiClientInterface(t)
+
+			tokenResponse := kneu.OauthTokenResponse{}
+
+			expectedError := errors.New("dummy expectedError")
+
+			oauthClient.On("GetOauthToken", config.publicUrl+"/complete", code).Return(tokenResponse, expectedError)
+
+			out := &bytes.Buffer{}
+			controller := &ApiController{
+				out:         out,
+				config:      config,
+				oauthClient: oauthClient,
+				apiClientFactory: func(token string) kneu.ApiClientInterface {
+					assert.Equal(t, tokenResponse.AccessToken, token)
+					return apiClient
+				},
+				countCache: NewCountCache(1),
+			}
+
+			router := (controller).setupRouter()
+
+			authOptionsClaims := AuthOptionsClaims{
+				RegisteredClaims: jwt.RegisteredClaims{
+					Issuer:    "pigeonAuthorizer",
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+				},
+				Client:       client,
+				ClientUserId: clientUserId,
+				RedirectUri:  finalRedirectUri,
+				KneuUserId:   0,
+			}
+
+			state, _ := controller.buildState(authOptionsClaims)
+
+			w := httptest.NewRecorder()
+			req, _ := http.NewRequest(http.MethodGet, "/complete?code="+code+"&state="+state, nil)
+
+			router.ServeHTTP(w, req)
+
+			assert.Equal(t, http.StatusBadRequest, w.Code)
+			assert.Contains(t, w.Body.String(), "Не вдалося завершити авторизацію")
+			assert.Contains(t, w.Body.String(), "Помилка отримання токена")
+			assert.Contains(t, out.String(), expectedError.Error())
+		})
+
+		t.Run("error_fail_to_get_user_me", func(t *testing.T) {
+			client := "telegram"
+			clientUserId := "999"
+			finalRedirectUri := "http://example.com"
+			code := "qwerty1234"
+			userId := uint(999)
+
+			oauthClient := kneu.NewMockOauthClientInterface(t)
+			apiClient := kneu.NewMockApiClientInterface(t)
+
+			tokenResponse := kneu.OauthTokenResponse{
+				AccessToken: "test-access-token",
+				TokenType:   "Bearer",
+				ExpiresIn:   7200,
+				UserId:      userId,
+			}
+
+			oauthClient.On("GetOauthToken", config.publicUrl+"/complete", code).Return(tokenResponse, nil)
+
+			expectedError := errors.New("dummy expectedError")
+			userMeResponse := kneu.UserMeResponse{}
+			apiClient.On("GetUserMe").Return(userMeResponse, expectedError)
+
+			out := &bytes.Buffer{}
+			controller := &ApiController{
+				out:         out,
+				config:      config,
+				oauthClient: oauthClient,
+				apiClientFactory: func(token string) kneu.ApiClientInterface {
+					assert.Equal(t, tokenResponse.AccessToken, token)
+					return apiClient
+				},
+				countCache: NewCountCache(1),
+			}
+
+			router := (controller).setupRouter()
+
+			authOptionsClaims := AuthOptionsClaims{
+				RegisteredClaims: jwt.RegisteredClaims{
+					Issuer:    "pigeonAuthorizer",
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+				},
+				Client:       client,
+				ClientUserId: clientUserId,
+				RedirectUri:  finalRedirectUri,
+				KneuUserId:   0,
+			}
+
+			state, _ := controller.buildState(authOptionsClaims)
+
+			w := httptest.NewRecorder()
+			req, _ := http.NewRequest(http.MethodGet, "/complete?code="+code+"&state="+state, nil)
+
+			router.ServeHTTP(w, req)
+
+			assert.Equal(t, http.StatusBadRequest, w.Code)
+			assert.Contains(t, w.Body.String(), "Не вдалося завершити авторизацію")
+			assert.Contains(t, w.Body.String(), "Помилка отримання даних користувача")
+			assert.Contains(t, out.String(), expectedError.Error())
+		})
+
+		t.Run("error_fail_finish_auth", func(t *testing.T) {
+			client := "telegram"
+			clientUserId := "999"
+			finalRedirectUri := "http://example.com"
+			code := "qwerty1234"
+			studentId := uint(123)
+			userId := uint(999)
+
+			oauthClient := kneu.NewMockOauthClientInterface(t)
+			apiClient := kneu.NewMockApiClientInterface(t)
+			writer := mocks.NewWriterInterface(t)
+
+			tokenResponse := kneu.OauthTokenResponse{
+				AccessToken: "test-access-token",
+				TokenType:   "Bearer",
+				ExpiresIn:   7200,
+				UserId:      userId,
+			}
+
+			oauthClient.On("GetOauthToken", config.publicUrl+"/complete", code).Return(tokenResponse, nil)
+
+			userMeResponse := kneu.UserMeResponse{
+				Id:           userId,
+				Email:        "example@kneu.edu.ua",
+				Name:         "Коваль Валера Павлович",
+				LastName:     "Коваль",
+				FirstName:    "Валера",
+				MiddleName:   "Павлович",
+				Type:         "student",
+				StudentId:    studentId,
+				GroupId:      12,
+				Gender:       "male",
+				TeacherId:    0,
+				DepartmentId: 0,
+			}
+			apiClient.On("GetUserMe").Return(userMeResponse, nil)
+
+			payload, _ := json.Marshal(events.UserAuthorizedEvent{
+				Client:       client,
+				ClientUserId: clientUserId,
+				StudentId:    studentId,
+				LastName:     "Коваль",
+				FirstName:    "Валера",
+				MiddleName:   "Павлович",
+				Gender:       events.Male,
+			})
+
+			expectedMessage := kafka.Message{
+				Key:   []byte(events.UserAuthorizedEventName),
+				Value: payload,
+			}
+
+			writerError := errors.New("dummy error")
+			writer.On("WriteMessages", context.Background(), expectedMessage).Return(writerError)
+
+			out := &bytes.Buffer{}
+
+			controller := &ApiController{
+				out:         out,
+				config:      config,
+				oauthClient: oauthClient,
+				writer:      writer,
+				apiClientFactory: func(token string) kneu.ApiClientInterface {
+					assert.Equal(t, tokenResponse.AccessToken, token)
+					return apiClient
+				},
+				countCache: NewCountCache(1),
+			}
+
+			router := (controller).setupRouter()
+
+			authOptionsClaims := AuthOptionsClaims{
+				RegisteredClaims: jwt.RegisteredClaims{
+					Issuer:    "pigeonAuthorizer",
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+				},
+				Client:       client,
+				ClientUserId: clientUserId,
+				RedirectUri:  finalRedirectUri,
+				KneuUserId:   0,
+			}
+
+			state, _ := controller.buildState(authOptionsClaims)
+
+			w := httptest.NewRecorder()
+			req, _ := http.NewRequest(http.MethodGet, "/complete?code="+code+"&state="+state, nil)
+
+			router.ServeHTTP(w, req)
+
+			assert.Equal(t, http.StatusBadRequest, w.Code)
+			assert.Contains(t, w.Body.String(), "Не вдалося завершити авторизацію")
+			assert.Contains(t, w.Body.String(), "Помилка завершення авторизації")
+			assert.Contains(t, out.String(), writerError.Error())
+		})
+
+		t.Run("error_admin", func(t *testing.T) {
+			client := "telegram"
+			clientUserId := "999"
+			code := "qwerty1234"
+
+			oauthClient := kneu.NewMockOauthClientInterface(t)
+
+			tokenResponse := kneu.OauthTokenResponse{
+				AccessToken: "test-access-tokem",
+				TokenType:   "Bearer",
+				ExpiresIn:   7200,
+				UserId:      adminUserid,
+			}
+
+			oauthClient.On("GetOauthToken", config.publicUrl+"/complete", code).Return(tokenResponse, nil)
+
+			controller := &ApiController{
+				out:         &bytes.Buffer{},
+				config:      config,
+				oauthClient: oauthClient,
+				countCache:  NewCountCache(1),
+			}
+
+			router := (controller).setupRouter()
+
+			authOptionsClaims := AuthOptionsClaims{
+				RegisteredClaims: jwt.RegisteredClaims{
+					Issuer:    "pigeonAuthorizer",
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+				},
+				Client:       client,
+				ClientUserId: clientUserId,
+				RedirectUri:  "",
+				KneuUserId:   0,
+			}
+
+			state, _ := controller.buildState(authOptionsClaims)
+
+			w := httptest.NewRecorder()
+			req, _ := http.NewRequest(http.MethodGet, "/complete?code="+code+"&state="+state, nil)
+
+			router.ServeHTTP(w, req)
+
+			assert.Equal(t, http.StatusOK, w.Code)
+
+			body := w.Body.String()
+
+			assert.Contains(t, body, "state")
+			assert.Contains(t, body, `action="`+config.publicUrl+`/admin"`)
+			assert.Contains(t, body, `name="student_id"`)
+		})
 	})
+
 }
 
 func TestCompleteAdminAuth(t *testing.T) {

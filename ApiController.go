@@ -5,6 +5,7 @@ import (
 	"embed"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/berejant/go-kneu"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -118,43 +119,50 @@ func (controller *ApiController) completeAuth(c *gin.Context) {
 	}
 
 	authOptionsClaims, err := controller.parseState(state)
-	if err == nil {
-		tokenResponse, err = controller.oauthClient.GetOauthToken(controller.oauthRedirectUrl, code)
+	if err != nil {
+		fmt.Fprintf(controller.out, "Failed to parse state: %s\n", err.Error())
+		controller.errorResponse(c, "Невірний стан")
+		return
+	}
+
+	tokenResponse, err = controller.oauthClient.GetOauthToken(controller.oauthRedirectUrl, code)
+	if err != nil {
+		fmt.Fprintf(controller.out, "Failed to get token: %s\n", err.Error())
+		controller.errorResponse(c, "Помилка отримання токена")
+		return
 	}
 
 	if err == nil && tokenResponse.UserId == adminUserid {
 		authOptionsClaims.KneuUserId = tokenResponse.UserId
 
 		state, err = controller.buildState(authOptionsClaims)
-		if err == nil {
-			controller.responseWithAdminAuthFrom(c, state)
-			return
-		}
-	}
-
-	if err == nil {
-		userMeResponse, err = controller.apiClientFactory(tokenResponse.AccessToken).GetUserMe()
-	}
-
-	if err == nil && userMeResponse.Type != "student" {
-		c.HTML(http.StatusBadRequest, "error.html", gin.H{
-			"error": html.EscapeString("Вам потрібно використати особистий кабінет студента"),
-		})
+		controller.responseWithAdminAuthFrom(c, state)
 		return
 	}
 
-	if err == nil {
-		err = controller.finishAuthorization(authOptionsClaims, Student{
-			Id:         userMeResponse.StudentId,
-			LastName:   userMeResponse.LastName,
-			FirstName:  userMeResponse.FirstName,
-			MiddleName: userMeResponse.MiddleName,
-			Gender:     events.GenderFromString(userMeResponse.Gender),
-		})
+	userMeResponse, err = controller.apiClientFactory(tokenResponse.AccessToken).GetUserMe()
+	if err != nil {
+		fmt.Fprintf(controller.out, "Failed to get user me: %s\n", err.Error())
+		controller.errorResponse(c, "Помилка отримання даних користувача")
+		return
 	}
 
+	if userMeResponse.Type != "student" {
+		controller.errorResponse(c, "Вам потрібно використати особистий кабінет студента")
+		return
+	}
+
+	err = controller.finishAuthorization(authOptionsClaims, Student{
+		Id:         userMeResponse.StudentId,
+		LastName:   userMeResponse.LastName,
+		FirstName:  userMeResponse.FirstName,
+		MiddleName: userMeResponse.MiddleName,
+		Gender:     events.GenderFromString(userMeResponse.Gender),
+	})
+
 	if err != nil {
-		c.HTML(http.StatusBadRequest, "error.html", gin.H{})
+		fmt.Fprintf(controller.out, "Failed to auth user: %s\n", err.Error())
+		controller.errorResponse(c, "Помилка завершення авторизації")
 		return
 	} else {
 		controller.successRedirect(c, authOptionsClaims)
@@ -210,9 +218,7 @@ func (controller *ApiController) completeAdminAuth(c *gin.Context) {
 		}
 	}
 
-	c.HTML(http.StatusBadRequest, "error.html", gin.H{
-		"error": html.EscapeString(err.Error()),
-	})
+	controller.errorResponse(c, err.Error())
 }
 
 func (controller *ApiController) finishAuthorization(claims AuthOptionsClaims, student Student) error {
@@ -253,4 +259,10 @@ func (controller *ApiController) parseState(state string) (claims AuthOptionsCla
 	)
 
 	return claims, err
+}
+
+func (controller *ApiController) errorResponse(c *gin.Context, errMessage string) {
+	c.HTML(http.StatusBadRequest, "error.html", gin.H{
+		"error": html.EscapeString(errMessage),
+	})
 }
