@@ -209,7 +209,7 @@ func TestCompleteAuth(t *testing.T) {
 			authOptionsClaims := AuthOptionsClaims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "pigeonAuthorizer",
-					ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
 				},
 				Client:       client,
 				ClientUserId: clientUserId,
@@ -298,7 +298,7 @@ func TestCompleteAuth(t *testing.T) {
 			authOptionsClaims := AuthOptionsClaims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "pigeonAuthorizer",
-					ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
 				},
 				Client:       client,
 				ClientUserId: clientUserId,
@@ -345,7 +345,7 @@ func TestCompleteAuth(t *testing.T) {
 			authOptionsClaims := AuthOptionsClaims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "pigeonAuthorizer",
-					ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
 				},
 				Client:       client,
 				ClientUserId: clientUserId,
@@ -424,7 +424,7 @@ func TestCompleteAuth(t *testing.T) {
 			authOptionsClaims := AuthOptionsClaims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "pigeonAuthorizer",
-					ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
 				},
 				Client:       client,
 				ClientUserId: clientUserId,
@@ -442,6 +442,54 @@ func TestCompleteAuth(t *testing.T) {
 			assert.Equal(t, http.StatusBadRequest, w.Code)
 			assert.Contains(t, w.Body.String(), "Не вдалося завершити авторизацію")
 			assert.Contains(t, w.Body.String(), "Вам потрібно використати особистий кабінет студента")
+		})
+
+		t.Run("error_expired_state", func(t *testing.T) {
+			client := "telegram"
+			clientUserId := "999"
+			finalRedirectUri := "http://example.com"
+			code := "qwerty1234"
+
+			oauthClient := kneu.NewMockOauthClientInterface(t)
+			apiClient := kneu.NewMockApiClientInterface(t)
+
+			tokenResponse := kneu.OauthTokenResponse{}
+
+			out := &bytes.Buffer{}
+			controller := &ApiController{
+				out:         out,
+				config:      config,
+				oauthClient: oauthClient,
+				apiClientFactory: func(token string) kneu.ApiClientInterface {
+					assert.Equal(t, tokenResponse.AccessToken, token)
+					return apiClient
+				},
+				countCache: NewCountCache(1),
+			}
+
+			router := (controller).setupRouter()
+
+			authOptionsClaims := AuthOptionsClaims{
+				RegisteredClaims: jwt.RegisteredClaims{
+					Issuer:    "pigeonAuthorizer",
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(-time.Hour * 6)),
+				},
+				Client:       client,
+				ClientUserId: clientUserId,
+				RedirectUri:  finalRedirectUri,
+				KneuUserId:   0,
+			}
+
+			state, _ := controller.buildState(authOptionsClaims)
+
+			w := httptest.NewRecorder()
+			req, _ := http.NewRequest(http.MethodGet, "/complete?code="+code+"&state="+state, nil)
+
+			router.ServeHTTP(w, req)
+
+			assert.Equal(t, http.StatusBadRequest, w.Code)
+			assert.Contains(t, w.Body.String(), "Не вдалося завершити авторизацію")
+			assert.Contains(t, w.Body.String(), "Посилання для авторизації через сайт КНЕУ отримане через бот недійсне. Отримайте нове посилання надіславши боту команду /start")
 		})
 
 		t.Run("error_wrong_state", func(t *testing.T) {
@@ -475,7 +523,7 @@ func TestCompleteAuth(t *testing.T) {
 
 			assert.Equal(t, http.StatusBadRequest, w.Code)
 			assert.Contains(t, w.Body.String(), "Не вдалося завершити авторизацію")
-			assert.Contains(t, w.Body.String(), "Невірний стан")
+			assert.Contains(t, w.Body.String(), "Некорректне посилання для авторизації через сайт КНЕУ")
 			assert.Contains(t, out.String(), "Failed to parse state")
 		})
 
@@ -511,7 +559,7 @@ func TestCompleteAuth(t *testing.T) {
 			authOptionsClaims := AuthOptionsClaims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "pigeonAuthorizer",
-					ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
 				},
 				Client:       client,
 				ClientUserId: clientUserId,
@@ -572,7 +620,7 @@ func TestCompleteAuth(t *testing.T) {
 			authOptionsClaims := AuthOptionsClaims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "pigeonAuthorizer",
-					ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
 				},
 				Client:       client,
 				ClientUserId: clientUserId,
@@ -667,7 +715,7 @@ func TestCompleteAuth(t *testing.T) {
 			authOptionsClaims := AuthOptionsClaims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "pigeonAuthorizer",
-					ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
 				},
 				Client:       client,
 				ClientUserId: clientUserId,
@@ -716,7 +764,7 @@ func TestCompleteAuth(t *testing.T) {
 			authOptionsClaims := AuthOptionsClaims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "pigeonAuthorizer",
-					ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
 				},
 				Client:       client,
 				ClientUserId: clientUserId,
@@ -789,7 +837,7 @@ func TestCompleteAdminAuth(t *testing.T) {
 		authOptionsClaims := AuthOptionsClaims{
 			RegisteredClaims: jwt.RegisteredClaims{
 				Issuer:    "pigeonAuthorizer",
-				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+				ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
 			},
 			Client:       client,
 			ClientUserId: clientUserId,
@@ -824,7 +872,7 @@ func TestCompleteAdminAuth(t *testing.T) {
 		authOptionsClaims := AuthOptionsClaims{
 			RegisteredClaims: jwt.RegisteredClaims{
 				Issuer:    "pigeonAuthorizer",
-				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+				ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
 			},
 			Client:       client,
 			ClientUserId: clientUserId,

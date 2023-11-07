@@ -21,6 +21,8 @@ import (
 
 const adminUserid = 1
 
+var stateLifetime = time.Hour * 6
+
 //go:embed templates/*.html
 var templates embed.FS
 
@@ -89,7 +91,7 @@ func (controller *ApiController) getAuthUrl(c *gin.Context) {
 	if err == nil {
 		authOptionsClaims.KneuUserId = 0
 		authOptionsClaims.Issuer = "pigeonAuthorizer"
-		authOptionsClaims.ExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Minute * 15))
+		authOptionsClaims.ExpiresAt = jwt.NewNumericDate(time.Now().Add(stateLifetime))
 
 		state, err = controller.buildState(authOptionsClaims)
 	}
@@ -119,9 +121,14 @@ func (controller *ApiController) completeAuth(c *gin.Context) {
 	}
 
 	authOptionsClaims, err := controller.parseState(state)
-	if err != nil {
+	if errors.Is(err, jwt.ErrTokenExpired) {
+		controller.errorResponse(c, "Посилання для авторизації через сайт КНЕУ отримане через бот недійсне. Отримайте нове посилання надіславши боту команду /start")
+		authErrorExpiredStateTotal.Inc()
+		return
+	} else if err != nil {
+		controller.errorResponse(c, "Некорректне посилання для авторизації через сайт КНЕУ. Отримайте нове посилання надіславши боту команду /start")
 		fmt.Fprintf(controller.out, "Failed to parse state: %s\n", err.Error())
-		controller.errorResponse(c, "Невірний стан")
+		authErrorWrongStateTotal.Inc()
 		return
 	}
 
@@ -129,6 +136,7 @@ func (controller *ApiController) completeAuth(c *gin.Context) {
 	if err != nil {
 		fmt.Fprintf(controller.out, "Failed to get token: %s\n", err.Error())
 		controller.errorResponse(c, "Помилка отримання токена")
+		authErrorFailGetTokenTotal.Inc()
 		return
 	}
 
@@ -144,6 +152,7 @@ func (controller *ApiController) completeAuth(c *gin.Context) {
 	if err != nil {
 		fmt.Fprintf(controller.out, "Failed to get user me: %s\n", err.Error())
 		controller.errorResponse(c, "Помилка отримання даних користувача")
+		authErrorFailGetUserTotal.Inc()
 		return
 	}
 
@@ -163,6 +172,7 @@ func (controller *ApiController) completeAuth(c *gin.Context) {
 	if err != nil {
 		fmt.Fprintf(controller.out, "Failed to auth user: %s\n", err.Error())
 		controller.errorResponse(c, "Помилка завершення авторизації")
+		authErrorFailFinishAuthTotal.Inc()
 		return
 	} else {
 		controller.successRedirect(c, authOptionsClaims)

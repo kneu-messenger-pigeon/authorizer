@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/VictoriaMetrics/metrics"
 	"github.com/berejant/go-kneu"
 	"github.com/gin-gonic/gin"
 	"github.com/kneu-messenger-pigeon/events"
@@ -14,9 +13,6 @@ import (
 )
 
 const ExitCodeMainError = 1
-
-var getAuthUrlRequestsTotal = metrics.NewCounter("get_auth_url_requests_total")
-var completeAuthRequestsTotal = metrics.NewCounter("complete_auth_requests_total")
 
 func runApp(out io.Writer, listenAndServe func(string, http.Handler) error) error {
 	envFilename := ""
