@@ -1,6 +1,7 @@
 package main
 
 import (
+	"authorizer/dto"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -87,13 +88,13 @@ func TestGetAuthUrl(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, w.Code)
 
-		response := GetAuthUrlResponse{}
+		response := dto.GetAuthUrlResponse{}
 		err := json.NewDecoder(w.Body).Decode(&response)
 		assert.NoError(t, err)
 
 		assert.Equal(t, expectedOauthUrl, response.AuthUrl)
 
-		authOptionsClaims := AuthOptionsClaims{}
+		authOptionsClaims := dto.AuthOptionsClaims{}
 		_, err = jwtParser.ParseWithClaims(
 			receivedState, &authOptionsClaims,
 			func(token *jwt.Token) (interface{}, error) {
@@ -208,7 +209,7 @@ func TestCompleteAuth(t *testing.T) {
 
 			router := (controller).setupRouter()
 
-			authOptionsClaims := AuthOptionsClaims{
+			authOptionsClaims := dto.AuthOptionsClaims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "pigeonAuthorizer",
 					ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
@@ -297,7 +298,7 @@ func TestCompleteAuth(t *testing.T) {
 
 			router := (controller).setupRouter()
 
-			authOptionsClaims := AuthOptionsClaims{
+			authOptionsClaims := dto.AuthOptionsClaims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "pigeonAuthorizer",
 					ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
@@ -344,7 +345,7 @@ func TestCompleteAuth(t *testing.T) {
 
 			router := (controller).setupRouter()
 
-			authOptionsClaims := AuthOptionsClaims{
+			authOptionsClaims := dto.AuthOptionsClaims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "pigeonAuthorizer",
 					ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
@@ -423,7 +424,7 @@ func TestCompleteAuth(t *testing.T) {
 
 			router := (controller).setupRouter()
 
-			authOptionsClaims := AuthOptionsClaims{
+			authOptionsClaims := dto.AuthOptionsClaims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "pigeonAuthorizer",
 					ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
@@ -471,7 +472,7 @@ func TestCompleteAuth(t *testing.T) {
 
 			router := (controller).setupRouter()
 
-			authOptionsClaims := AuthOptionsClaims{
+			authOptionsClaims := dto.AuthOptionsClaims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "pigeonAuthorizer",
 					ExpiresAt: jwt.NewNumericDate(time.Now().Add(-time.Hour * 6)),
@@ -558,7 +559,7 @@ func TestCompleteAuth(t *testing.T) {
 
 			router := (controller).setupRouter()
 
-			authOptionsClaims := AuthOptionsClaims{
+			authOptionsClaims := dto.AuthOptionsClaims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "pigeonAuthorizer",
 					ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
@@ -619,7 +620,7 @@ func TestCompleteAuth(t *testing.T) {
 
 			router := (controller).setupRouter()
 
-			authOptionsClaims := AuthOptionsClaims{
+			authOptionsClaims := dto.AuthOptionsClaims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "pigeonAuthorizer",
 					ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
@@ -714,7 +715,7 @@ func TestCompleteAuth(t *testing.T) {
 
 			router := (controller).setupRouter()
 
-			authOptionsClaims := AuthOptionsClaims{
+			authOptionsClaims := dto.AuthOptionsClaims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "pigeonAuthorizer",
 					ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
@@ -763,7 +764,7 @@ func TestCompleteAuth(t *testing.T) {
 
 			router := (controller).setupRouter()
 
-			authOptionsClaims := AuthOptionsClaims{
+			authOptionsClaims := dto.AuthOptionsClaims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "pigeonAuthorizer",
 					ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
@@ -836,7 +837,7 @@ func TestCompleteAdminAuth(t *testing.T) {
 
 		router := (controller).setupRouter()
 
-		authOptionsClaims := AuthOptionsClaims{
+		authOptionsClaims := dto.AuthOptionsClaims{
 			RegisteredClaims: jwt.RegisteredClaims{
 				Issuer:    "pigeonAuthorizer",
 				ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
@@ -871,7 +872,7 @@ func TestCompleteAdminAuth(t *testing.T) {
 
 		router := (controller).setupRouter()
 
-		authOptionsClaims := AuthOptionsClaims{
+		authOptionsClaims := dto.AuthOptionsClaims{
 			RegisteredClaims: jwt.RegisteredClaims{
 				Issuer:    "pigeonAuthorizer",
 				ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),

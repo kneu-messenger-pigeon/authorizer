@@ -1,6 +1,7 @@
 package main
 
 import (
+	"authorizer/dto"
 	"context"
 	"embed"
 	"encoding/json"
@@ -38,27 +39,6 @@ type ApiController struct {
 	countCache *countCache
 }
 
-type AuthOptionsClaims struct {
-	jwt.RegisteredClaims
-	Client       string `form:"client" json:"client" binding:"required"`
-	ClientUserId string `form:"client_user_id" json:"clientUserId"  binding:"required"`
-	RedirectUri  string `form:"redirect_uri" json:"redirectUri,omitempty"`
-	KneuUserId   uint   `form:"-" json:"userId,omitempty"`
-}
-
-type Student struct {
-	Id         uint
-	LastName   string
-	FirstName  string
-	MiddleName string
-	Gender     events.Gender
-}
-
-type GetAuthUrlResponse struct {
-	AuthUrl  string    `json:"authUrl" binding:"required"`
-	ExpireAt time.Time `json:"expire" binding:"required"`
-}
-
 func (controller *ApiController) setupRouter() *gin.Engine {
 	router := gin.New()
 
@@ -91,7 +71,7 @@ func (controller *ApiController) getAuthUrl(c *gin.Context) {
 	var err error
 	var state string
 
-	authOptionsClaims := AuthOptionsClaims{}
+	authOptionsClaims := dto.AuthOptionsClaims{}
 	err = c.Bind(&authOptionsClaims)
 	expireAt := time.Now().Add(stateLifetime).Truncate(jwt.TimePrecision)
 	if err == nil {
@@ -105,7 +85,7 @@ func (controller *ApiController) getAuthUrl(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Wrong request data"})
 	} else {
-		response := GetAuthUrlResponse{
+		response := dto.GetAuthUrlResponse{
 			AuthUrl:  controller.oauthClient.GetOauthUrl(controller.oauthRedirectUrl, state),
 			ExpireAt: expireAt,
 		}
@@ -116,7 +96,7 @@ func (controller *ApiController) getAuthUrl(c *gin.Context) {
 
 func (controller *ApiController) completeAuth(c *gin.Context) {
 
-	var authOptionsClaims AuthOptionsClaims
+	var authOptionsClaims dto.AuthOptionsClaims
 	var tokenResponse kneu.OauthTokenResponse
 	var userMeResponse kneu.UserMeResponse
 
@@ -170,7 +150,7 @@ func (controller *ApiController) completeAuth(c *gin.Context) {
 		return
 	}
 
-	err = controller.finishAuthorization(authOptionsClaims, Student{
+	err = controller.finishAuthorization(authOptionsClaims, dto.Student{
 		Id:         userMeResponse.StudentId,
 		LastName:   userMeResponse.LastName,
 		FirstName:  userMeResponse.FirstName,
@@ -188,7 +168,7 @@ func (controller *ApiController) completeAuth(c *gin.Context) {
 	}
 }
 
-func (controller *ApiController) successRedirect(c *gin.Context, claims AuthOptionsClaims) {
+func (controller *ApiController) successRedirect(c *gin.Context, claims dto.AuthOptionsClaims) {
 	redirectUri := claims.RedirectUri
 	if redirectUri == "" {
 		redirectUri = controller.config.publicUrl + "/close.html"
@@ -223,7 +203,7 @@ func (controller *ApiController) completeAdminAuth(c *gin.Context) {
 
 		err = errors.New("not enough rights")
 		if adminUserid == authOptionsClaims.KneuUserId {
-			err = controller.finishAuthorization(authOptionsClaims, Student{
+			err = controller.finishAuthorization(authOptionsClaims, dto.Student{
 				Id:         uint(studentId),
 				LastName:   "Адмін",
 				FirstName:  "Адмін#" + strconv.FormatUint(studentId, 10),
@@ -240,7 +220,7 @@ func (controller *ApiController) completeAdminAuth(c *gin.Context) {
 	controller.errorResponse(c, err.Error())
 }
 
-func (controller *ApiController) finishAuthorization(claims AuthOptionsClaims, student Student) error {
+func (controller *ApiController) finishAuthorization(claims dto.AuthOptionsClaims, student dto.Student) error {
 	event := events.UserAuthorizedEvent{
 		Client:       claims.Client,
 		ClientUserId: claims.ClientUserId,
@@ -261,7 +241,7 @@ func (controller *ApiController) finishAuthorization(claims AuthOptionsClaims, s
 	)
 }
 
-func (controller *ApiController) buildState(authOptionsClaims AuthOptionsClaims) (state string, err error) {
+func (controller *ApiController) buildState(authOptionsClaims dto.AuthOptionsClaims) (state string, err error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, &authOptionsClaims)
 	state, err = token.SignedString(controller.config.jwtSecretKey)
 	return
@@ -269,7 +249,7 @@ func (controller *ApiController) buildState(authOptionsClaims AuthOptionsClaims)
 
 var jwtParser = jwt.NewParser(jwt.WithValidMethods([]string{"HS512"}))
 
-func (controller *ApiController) parseState(state string) (claims AuthOptionsClaims, err error) {
+func (controller *ApiController) parseState(state string) (claims dto.AuthOptionsClaims, err error) {
 	_, err = jwtParser.ParseWithClaims(
 		state, &claims,
 		func(token *jwt.Token) (interface{}, error) {
