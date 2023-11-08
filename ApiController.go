@@ -54,6 +54,11 @@ type Student struct {
 	Gender     events.Gender
 }
 
+type GetAuthUrlResponse struct {
+	AuthUrl  string    `json:"authUrl" binding:"required"`
+	ExpireAt time.Time `json:"expire" binding:"required"`
+}
+
 func (controller *ApiController) setupRouter() *gin.Engine {
 	router := gin.New()
 
@@ -88,10 +93,11 @@ func (controller *ApiController) getAuthUrl(c *gin.Context) {
 
 	authOptionsClaims := AuthOptionsClaims{}
 	err = c.Bind(&authOptionsClaims)
+	expireAt := time.Now().Add(stateLifetime).Truncate(jwt.TimePrecision)
 	if err == nil {
 		authOptionsClaims.KneuUserId = 0
 		authOptionsClaims.Issuer = "pigeonAuthorizer"
-		authOptionsClaims.ExpiresAt = jwt.NewNumericDate(time.Now().Add(stateLifetime))
+		authOptionsClaims.ExpiresAt = jwt.NewNumericDate(expireAt)
 
 		state, err = controller.buildState(authOptionsClaims)
 	}
@@ -99,9 +105,12 @@ func (controller *ApiController) getAuthUrl(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Wrong request data"})
 	} else {
-		c.JSON(http.StatusOK, gin.H{
-			"authUrl": controller.oauthClient.GetOauthUrl(controller.oauthRedirectUrl, state),
-		})
+		response := GetAuthUrlResponse{
+			AuthUrl:  controller.oauthClient.GetOauthUrl(controller.oauthRedirectUrl, state),
+			ExpireAt: expireAt,
+		}
+
+		c.JSON(http.StatusOK, &response)
 	}
 }
 

@@ -20,10 +20,6 @@ import (
 	"time"
 )
 
-type GetAuthUrlResponse struct {
-	AuthUrl string `json:"authUrl" binding:"required"`
-}
-
 func TestPingRoute(t *testing.T) {
 	router := (&ApiController{}).setupRouter()
 
@@ -81,6 +77,8 @@ func TestGetAuthUrl(t *testing.T) {
 			config:      config,
 		}).setupRouter()
 
+		startTime := time.Now().Truncate(jwt.TimePrecision)
+
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest(http.MethodPost, "/url", strings.NewReader("client="+client+"&client_user_id="+clientUserId+"&redirect_uri="+redirectUrl))
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -93,7 +91,7 @@ func TestGetAuthUrl(t *testing.T) {
 		err := json.NewDecoder(w.Body).Decode(&response)
 		assert.NoError(t, err)
 
-		assert.Equal(t, "https://auth.kneu.edu.ua/oauth?response_type=code&client_id=0&redirect_uri=https%3A%2F%2Fpigeon.com%2Fcomplete&_state_", response.AuthUrl)
+		assert.Equal(t, expectedOauthUrl, response.AuthUrl)
 
 		authOptionsClaims := AuthOptionsClaims{}
 		_, err = jwtParser.ParseWithClaims(
@@ -106,6 +104,10 @@ func TestGetAuthUrl(t *testing.T) {
 		assert.Equal(t, redirectUrl, authOptionsClaims.RedirectUri)
 		assert.Equal(t, client, authOptionsClaims.Client)
 		assert.Equal(t, clientUserId, authOptionsClaims.ClientUserId)
+
+		assert.GreaterOrEqual(t, response.ExpireAt, startTime.Add(stateLifetime))
+		assert.LessOrEqual(t, response.ExpireAt, time.Now().Add(stateLifetime))
+		assert.Equal(t, authOptionsClaims.ExpiresAt.Time, response.ExpireAt)
 	})
 
 	t.Run("error", func(t *testing.T) {
