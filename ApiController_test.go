@@ -1,13 +1,13 @@
 package main
 
 import (
-	"authorizer/dto"
 	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"github.com/berejant/go-kneu"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/kneu-messenger-pigeon/authorizer/dto"
 	"github.com/kneu-messenger-pigeon/events"
 	"github.com/kneu-messenger-pigeon/events/mocks"
 	"github.com/segmentio/kafka-go"

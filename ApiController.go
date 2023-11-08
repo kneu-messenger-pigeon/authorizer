@@ -1,7 +1,6 @@
 package main
 
 import (
-	"authorizer/dto"
 	"context"
 	"embed"
 	"encoding/json"
@@ -10,6 +9,7 @@ import (
 	"github.com/berejant/go-kneu"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/kneu-messenger-pigeon/authorizer/dto"
 	"github.com/kneu-messenger-pigeon/events"
 	"github.com/segmentio/kafka-go"
 	"html"

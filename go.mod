@@ -1,4 +1,4 @@
-module authorizer
+module github.com/kneu-messenger-pigeon/authorizer
 
 go 1.19
 
