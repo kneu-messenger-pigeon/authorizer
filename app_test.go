@@ -18,6 +18,7 @@ func TestRunApp(t *testing.T) {
 		_ = os.Setenv("KAFKA_HOST", expectedConfig.kafkaHost)
 		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(int(expectedConfig.kneuClientId)))
 		_ = os.Setenv("KNEU_CLIENT_SECRET", expectedConfig.kneuClientSecret)
+		_ = os.Setenv("AUTH_STATE_LIFETIME", "15m")
 
 		var out bytes.Buffer
 
