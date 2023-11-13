@@ -21,7 +21,8 @@ type Config struct {
 	kneuClientId     uint
 	kneuClientSecret string
 
-	jwtSecretKey []byte
+	jwtSecretKey      []byte
+	authStateLifetime time.Duration
 
 	appSecret string
 }
@@ -39,6 +40,11 @@ func loadConfig(envFilename string) (Config, error) {
 		return Config{}, errors.New(fmt.Sprintf("Wrong KNEU client (%d) ID %s", kneuClientId, err))
 	}
 
+	authStateLifetime, err := time.ParseDuration(os.Getenv("AUTH_STATE_LIFETIME"))
+	if authStateLifetime < 1 {
+		return Config{}, errors.New(fmt.Sprintf("Wrong AUTH_STATE_LIFETIME %s", err))
+	}
+
 	config := Config{
 		publicUrl:     strings.TrimRight(os.Getenv("AUTHORIZER_PUBLIC_URL"), "/"),
 		listenAddress: os.Getenv("LISTEN"),
@@ -48,7 +54,8 @@ func loadConfig(envFilename string) (Config, error) {
 		kneuClientId:     uint(kneuClientId),
 		kneuClientSecret: os.Getenv("KNEU_CLIENT_SECRET"),
 
-		jwtSecretKey: []byte(os.Getenv("JWT_SECRET_KEY")),
+		jwtSecretKey:      []byte(os.Getenv("JWT_SECRET_KEY")),
+		authStateLifetime: authStateLifetime,
 
 		appSecret: os.Getenv("APP_SECRET"),
 	}

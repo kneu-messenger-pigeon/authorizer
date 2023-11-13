@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"testing"
+	"time"
 )
 
 var expectedConfig = Config{
@@ -17,7 +18,8 @@ var expectedConfig = Config{
 	kneuClientId:     99,
 	kneuClientSecret: "testClientSecret",
 
-	jwtSecretKey: []byte{'t', 'e', 's', 't'},
+	jwtSecretKey:      []byte{'t', 'e', 's', 't'},
+	authStateLifetime: time.Minute * 20,
 
 	appSecret: "test_Secret_test123",
 }
@@ -31,7 +33,8 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(int(expectedConfig.kneuClientId)))
 		_ = os.Setenv("KNEU_CLIENT_SECRET", expectedConfig.kneuClientSecret)
 		_ = os.Setenv("JWT_SECRET_KEY", string(expectedConfig.jwtSecretKey))
-		_ = os.Setenv("APP_SECRET", string(expectedConfig.appSecret))
+		_ = os.Setenv("AUTH_STATE_LIFETIME", expectedConfig.authStateLifetime.String())
+		_ = os.Setenv("APP_SECRET", expectedConfig.appSecret)
 
 		config, err := loadConfig("")
 
@@ -52,6 +55,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		envFileContent += fmt.Sprintf("KNEU_CLIENT_SECRET=%s\n", expectedConfig.kneuClientSecret)
 
 		envFileContent += fmt.Sprintf("JWT_SECRET_KEY=%s\n", expectedConfig.jwtSecretKey)
+		envFileContent += fmt.Sprintf("AUTH_STATE_LIFETIME=%s\n", expectedConfig.authStateLifetime.String())
 		envFileContent += fmt.Sprintf("APP_SECRET=%s\n", expectedConfig.appSecret)
 
 		testEnvFilename := "TestLoadConfigFromFile.env"
@@ -109,6 +113,23 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		)
 	})
 
+	t.Run("EmptyAuthStateLifetime", func(t *testing.T) {
+		_ = os.Setenv("AUTHORIZER_PUBLIC_URL", "")
+		_ = os.Setenv("LISTEN", expectedConfig.listenAddress)
+		_ = os.Setenv("KAFKA_HOST", expectedConfig.kafkaHost)
+		_ = os.Setenv("KNEU_BASE_URI", expectedConfig.kneuBaseUri)
+		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(int(expectedConfig.kneuClientId)))
+		_ = os.Setenv("KNEU_CLIENT_SECRET", expectedConfig.kneuClientSecret)
+		_ = os.Setenv("JWT_SECRET_KEY", string(expectedConfig.jwtSecretKey))
+		_ = os.Unsetenv("AUTH_STATE_LIFETIME")
+
+		config, err := loadConfig("")
+
+		assert.Error(t, err, "loadConfig() should exit with error, actual error is nil")
+		assert.ErrorContains(t, err, "Wrong AUTH_STATE_LIFETIME")
+		assert.Empty(t, config.authStateLifetime)
+	})
+
 	t.Run("EmptyPublicUrl", func(t *testing.T) {
 		_ = os.Setenv("AUTHORIZER_PUBLIC_URL", "")
 		_ = os.Setenv("LISTEN", expectedConfig.listenAddress)
@@ -117,6 +138,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(int(expectedConfig.kneuClientId)))
 		_ = os.Setenv("KNEU_CLIENT_SECRET", expectedConfig.kneuClientSecret)
 		_ = os.Setenv("JWT_SECRET_KEY", string(expectedConfig.jwtSecretKey))
+		_ = os.Setenv("AUTH_STATE_LIFETIME", expectedConfig.authStateLifetime.String())
 
 		config, err := loadConfig("")
 
@@ -135,6 +157,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(int(expectedConfig.kneuClientId)))
 		_ = os.Setenv("KNEU_CLIENT_SECRET", expectedConfig.kneuClientSecret)
 		_ = os.Setenv("JWT_SECRET_KEY", string(expectedConfig.jwtSecretKey))
+		_ = os.Setenv("AUTH_STATE_LIFETIME", expectedConfig.authStateLifetime.String())
 
 		config, err := loadConfig("")
 
@@ -153,6 +176,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(int(expectedConfig.kneuClientId)))
 		_ = os.Setenv("KNEU_CLIENT_SECRET", expectedConfig.kneuClientSecret)
 		_ = os.Setenv("JWT_SECRET_KEY", string(expectedConfig.jwtSecretKey))
+		_ = os.Setenv("AUTH_STATE_LIFETIME", expectedConfig.authStateLifetime.String())
 
 		config, err := loadConfig("")
 
@@ -171,6 +195,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(int(expectedConfig.kneuClientId)))
 		_ = os.Setenv("KNEU_CLIENT_SECRET", expectedConfig.kneuClientSecret)
 		_ = os.Setenv("JWT_SECRET_KEY", string(expectedConfig.jwtSecretKey))
+		_ = os.Setenv("AUTH_STATE_LIFETIME", expectedConfig.authStateLifetime.String())
 
 		_, err := loadConfig("")
 
@@ -185,6 +210,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		_ = os.Setenv("KNEU_CLIENT_ID", "")
 		_ = os.Setenv("KNEU_CLIENT_SECRET", expectedConfig.kneuClientSecret)
 		_ = os.Setenv("JWT_SECRET_KEY", string(expectedConfig.jwtSecretKey))
+		_ = os.Setenv("AUTH_STATE_LIFETIME", expectedConfig.authStateLifetime.String())
 
 		config, err := loadConfig("")
 
@@ -203,6 +229,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(int(expectedConfig.kneuClientId)))
 		_ = os.Setenv("KNEU_CLIENT_SECRET", "")
 		_ = os.Setenv("JWT_SECRET_KEY", string(expectedConfig.jwtSecretKey))
+		_ = os.Setenv("AUTH_STATE_LIFETIME", expectedConfig.authStateLifetime.String())
 
 		config, err := loadConfig("")
 
@@ -221,6 +248,7 @@ func TestLoadConfigFromEnvVars(t *testing.T) {
 		_ = os.Setenv("KNEU_CLIENT_ID", strconv.Itoa(int(expectedConfig.kneuClientId)))
 		_ = os.Setenv("KNEU_CLIENT_SECRET", expectedConfig.kneuClientSecret)
 		_ = os.Setenv("JWT_SECRET_KEY", "")
+		_ = os.Setenv("AUTH_STATE_LIFETIME", expectedConfig.authStateLifetime.String())
 
 		config, err := loadConfig("")
 

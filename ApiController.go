@@ -22,8 +22,6 @@ import (
 
 const adminUserid = 1
 
-var stateLifetime = time.Hour * 6
-
 //go:embed templates/*.html
 var templates embed.FS
 
@@ -73,7 +71,7 @@ func (controller *ApiController) getAuthUrl(c *gin.Context) {
 
 	authOptionsClaims := dto.AuthOptionsClaims{}
 	err = c.Bind(&authOptionsClaims)
-	expireAt := time.Now().Add(stateLifetime).Truncate(jwt.TimePrecision)
+	expireAt := time.Now().Add(controller.config.authStateLifetime).Truncate(jwt.TimePrecision)
 	if err == nil {
 		authOptionsClaims.KneuUserId = 0
 		authOptionsClaims.Issuer = "pigeonAuthorizer"

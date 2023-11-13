@@ -45,14 +45,15 @@ func TestCloseHtml(t *testing.T) {
 
 func TestGetAuthUrl(t *testing.T) {
 	config := Config{
-		publicUrl:        "https://pigeon.com",
-		listenAddress:    "",
-		kafkaHost:        "",
-		kneuBaseUri:      "",
-		kneuClientId:     0,
-		kneuClientSecret: "",
-		jwtSecretKey:     nil,
-		appSecret:        "test-secret",
+		publicUrl:         "https://pigeon.com",
+		listenAddress:     "",
+		kafkaHost:         "",
+		kneuBaseUri:       "",
+		kneuClientId:      0,
+		kneuClientSecret:  "",
+		jwtSecretKey:      nil,
+		appSecret:         "test-secret",
+		authStateLifetime: time.Minute * 5,
 	}
 
 	t.Run("success", func(t *testing.T) {
@@ -106,8 +107,8 @@ func TestGetAuthUrl(t *testing.T) {
 		assert.Equal(t, client, authOptionsClaims.Client)
 		assert.Equal(t, clientUserId, authOptionsClaims.ClientUserId)
 
-		assert.GreaterOrEqual(t, response.ExpireAt, startTime.Add(stateLifetime))
-		assert.LessOrEqual(t, response.ExpireAt, time.Now().Add(stateLifetime))
+		assert.GreaterOrEqual(t, response.ExpireAt, startTime.Add(config.authStateLifetime))
+		assert.LessOrEqual(t, response.ExpireAt, time.Now().Add(config.authStateLifetime))
 		assert.Equal(t, authOptionsClaims.ExpiresAt.Time, response.ExpireAt)
 	})
 
@@ -131,14 +132,15 @@ func TestGetAuthUrl(t *testing.T) {
 
 func TestCompleteAuth(t *testing.T) {
 	config := Config{
-		publicUrl:        "https://pigeon.com",
-		listenAddress:    "",
-		kafkaHost:        "",
-		kneuBaseUri:      "",
-		kneuClientId:     0,
-		kneuClientSecret: "",
-		jwtSecretKey:     nil,
-		appSecret:        "test-secret",
+		publicUrl:         "https://pigeon.com",
+		listenAddress:     "",
+		kafkaHost:         "",
+		kneuBaseUri:       "",
+		kneuClientId:      0,
+		kneuClientSecret:  "",
+		jwtSecretKey:      nil,
+		appSecret:         "test-secret",
+		authStateLifetime: time.Minute * 5,
 	}
 
 	t.Run("success", func(t *testing.T) {
@@ -212,7 +214,7 @@ func TestCompleteAuth(t *testing.T) {
 			authOptionsClaims := dto.AuthOptionsClaims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "pigeonAuthorizer",
-					ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(config.authStateLifetime)),
 				},
 				Client:       client,
 				ClientUserId: clientUserId,
@@ -301,7 +303,7 @@ func TestCompleteAuth(t *testing.T) {
 			authOptionsClaims := dto.AuthOptionsClaims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "pigeonAuthorizer",
-					ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(config.authStateLifetime)),
 				},
 				Client:       client,
 				ClientUserId: clientUserId,
@@ -348,7 +350,7 @@ func TestCompleteAuth(t *testing.T) {
 			authOptionsClaims := dto.AuthOptionsClaims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "pigeonAuthorizer",
-					ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(config.authStateLifetime)),
 				},
 				Client:       client,
 				ClientUserId: clientUserId,
@@ -427,7 +429,7 @@ func TestCompleteAuth(t *testing.T) {
 			authOptionsClaims := dto.AuthOptionsClaims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "pigeonAuthorizer",
-					ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(config.authStateLifetime)),
 				},
 				Client:       client,
 				ClientUserId: clientUserId,
@@ -562,7 +564,7 @@ func TestCompleteAuth(t *testing.T) {
 			authOptionsClaims := dto.AuthOptionsClaims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "pigeonAuthorizer",
-					ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(config.authStateLifetime)),
 				},
 				Client:       client,
 				ClientUserId: clientUserId,
@@ -623,7 +625,7 @@ func TestCompleteAuth(t *testing.T) {
 			authOptionsClaims := dto.AuthOptionsClaims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "pigeonAuthorizer",
-					ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(config.authStateLifetime)),
 				},
 				Client:       client,
 				ClientUserId: clientUserId,
@@ -718,7 +720,7 @@ func TestCompleteAuth(t *testing.T) {
 			authOptionsClaims := dto.AuthOptionsClaims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "pigeonAuthorizer",
-					ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(config.authStateLifetime)),
 				},
 				Client:       client,
 				ClientUserId: clientUserId,
@@ -767,7 +769,7 @@ func TestCompleteAuth(t *testing.T) {
 			authOptionsClaims := dto.AuthOptionsClaims{
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "pigeonAuthorizer",
-					ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(config.authStateLifetime)),
 				},
 				Client:       client,
 				ClientUserId: clientUserId,
@@ -796,14 +798,15 @@ func TestCompleteAuth(t *testing.T) {
 
 func TestCompleteAdminAuth(t *testing.T) {
 	config := Config{
-		publicUrl:        "https://pigeon.com",
-		listenAddress:    "",
-		kafkaHost:        "",
-		kneuBaseUri:      "",
-		kneuClientId:     0,
-		kneuClientSecret: "",
-		jwtSecretKey:     nil,
-		appSecret:        "test-secret",
+		publicUrl:         "https://pigeon.com",
+		listenAddress:     "",
+		kafkaHost:         "",
+		kneuBaseUri:       "",
+		kneuClientId:      0,
+		kneuClientSecret:  "",
+		jwtSecretKey:      nil,
+		appSecret:         "test-secret",
+		authStateLifetime: time.Minute * 5,
 	}
 
 	t.Run("success", func(t *testing.T) {
@@ -840,7 +843,7 @@ func TestCompleteAdminAuth(t *testing.T) {
 		authOptionsClaims := dto.AuthOptionsClaims{
 			RegisteredClaims: jwt.RegisteredClaims{
 				Issuer:    "pigeonAuthorizer",
-				ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
+				ExpiresAt: jwt.NewNumericDate(time.Now().Add(config.authStateLifetime)),
 			},
 			Client:       client,
 			ClientUserId: clientUserId,
@@ -875,7 +878,7 @@ func TestCompleteAdminAuth(t *testing.T) {
 		authOptionsClaims := dto.AuthOptionsClaims{
 			RegisteredClaims: jwt.RegisteredClaims{
 				Issuer:    "pigeonAuthorizer",
-				ExpiresAt: jwt.NewNumericDate(time.Now().Add(stateLifetime)),
+				ExpiresAt: jwt.NewNumericDate(time.Now().Add(config.authStateLifetime)),
 			},
 			Client:       client,
 			ClientUserId: clientUserId,
