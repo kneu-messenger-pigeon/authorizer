@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/berejant/go-kneu"
+	kneuMocks "github.com/berejant/go-kneu/mocks"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/kneu-messenger-pigeon/authorizer/dto"
 	"github.com/kneu-messenger-pigeon/events"
@@ -64,7 +65,7 @@ func TestGetAuthUrl(t *testing.T) {
 
 		var receivedState string
 
-		oauthClient := kneu.NewMockOauthClientInterface(t)
+		oauthClient := kneuMocks.NewOauthClientInterface(t)
 		oauthClient.On(
 			"GetOauthUrl", config.publicUrl+"/complete",
 			mock.MatchedBy(func(state string) bool {
@@ -151,8 +152,8 @@ func TestCompleteAuth(t *testing.T) {
 			userId := uint(999)
 			studentId := uint(123)
 
-			oauthClient := kneu.NewMockOauthClientInterface(t)
-			apiClient := kneu.NewMockApiClientInterface(t)
+			oauthClient := kneuMocks.NewOauthClientInterface(t)
+			apiClient := kneuMocks.NewApiClientInterface(t)
 
 			writer := mocks.NewWriterInterface(t)
 
@@ -240,8 +241,8 @@ func TestCompleteAuth(t *testing.T) {
 			userId := uint(999)
 			studentId := uint(123)
 
-			oauthClient := kneu.NewMockOauthClientInterface(t)
-			apiClient := kneu.NewMockApiClientInterface(t)
+			oauthClient := kneuMocks.NewOauthClientInterface(t)
+			apiClient := kneuMocks.NewApiClientInterface(t)
 
 			writer := mocks.NewWriterInterface(t)
 
@@ -327,7 +328,7 @@ func TestCompleteAuth(t *testing.T) {
 			clientUserId := "999"
 			code := "qwerty1234"
 
-			oauthClient := kneu.NewMockOauthClientInterface(t)
+			oauthClient := kneuMocks.NewOauthClientInterface(t)
 
 			tokenResponse := kneu.OauthTokenResponse{
 				AccessToken: "test-access-tokem",
@@ -383,8 +384,8 @@ func TestCompleteAuth(t *testing.T) {
 			code := "qwerty1234"
 			userId := uint(999)
 
-			oauthClient := kneu.NewMockOauthClientInterface(t)
-			apiClient := kneu.NewMockApiClientInterface(t)
+			oauthClient := kneuMocks.NewOauthClientInterface(t)
+			apiClient := kneuMocks.NewApiClientInterface(t)
 
 			tokenResponse := kneu.OauthTokenResponse{
 				AccessToken: "test-access-tokem",
@@ -455,8 +456,8 @@ func TestCompleteAuth(t *testing.T) {
 			finalRedirectUri := "http://example.com"
 			code := "qwerty1234"
 
-			oauthClient := kneu.NewMockOauthClientInterface(t)
-			apiClient := kneu.NewMockApiClientInterface(t)
+			oauthClient := kneuMocks.NewOauthClientInterface(t)
+			apiClient := kneuMocks.NewApiClientInterface(t)
 
 			tokenResponse := kneu.OauthTokenResponse{}
 
@@ -500,8 +501,8 @@ func TestCompleteAuth(t *testing.T) {
 		t.Run("error_wrong_state", func(t *testing.T) {
 			code := "qwerty1234"
 
-			oauthClient := kneu.NewMockOauthClientInterface(t)
-			apiClient := kneu.NewMockApiClientInterface(t)
+			oauthClient := kneuMocks.NewOauthClientInterface(t)
+			apiClient := kneuMocks.NewApiClientInterface(t)
 
 			tokenResponse := kneu.OauthTokenResponse{}
 
@@ -538,8 +539,8 @@ func TestCompleteAuth(t *testing.T) {
 			finalRedirectUri := "http://example.com"
 			code := "qwerty1234"
 
-			oauthClient := kneu.NewMockOauthClientInterface(t)
-			apiClient := kneu.NewMockApiClientInterface(t)
+			oauthClient := kneuMocks.NewOauthClientInterface(t)
+			apiClient := kneuMocks.NewApiClientInterface(t)
 
 			tokenResponse := kneu.OauthTokenResponse{}
 
@@ -592,8 +593,8 @@ func TestCompleteAuth(t *testing.T) {
 			code := "qwerty1234"
 			userId := uint(999)
 
-			oauthClient := kneu.NewMockOauthClientInterface(t)
-			apiClient := kneu.NewMockApiClientInterface(t)
+			oauthClient := kneuMocks.NewOauthClientInterface(t)
+			apiClient := kneuMocks.NewApiClientInterface(t)
 
 			tokenResponse := kneu.OauthTokenResponse{
 				AccessToken: "test-access-token",
@@ -654,8 +655,8 @@ func TestCompleteAuth(t *testing.T) {
 			studentId := uint(123)
 			userId := uint(999)
 
-			oauthClient := kneu.NewMockOauthClientInterface(t)
-			apiClient := kneu.NewMockApiClientInterface(t)
+			oauthClient := kneuMocks.NewOauthClientInterface(t)
+			apiClient := kneuMocks.NewApiClientInterface(t)
 			writer := mocks.NewWriterInterface(t)
 
 			tokenResponse := kneu.OauthTokenResponse{
@@ -746,7 +747,7 @@ func TestCompleteAuth(t *testing.T) {
 			clientUserId := "999"
 			code := "qwerty1234"
 
-			oauthClient := kneu.NewMockOauthClientInterface(t)
+			oauthClient := kneuMocks.NewOauthClientInterface(t)
 
 			tokenResponse := kneu.OauthTokenResponse{
 				AccessToken: "test-access-tokem",

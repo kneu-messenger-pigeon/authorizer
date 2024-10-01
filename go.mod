@@ -5,11 +5,11 @@ go 1.23
 require (
 	github.com/VictoriaMetrics/fastcache v1.12.2
 	github.com/VictoriaMetrics/metrics v1.35.1
-	github.com/berejant/go-kneu v0.1.7
+	github.com/berejant/go-kneu v0.1.8
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/joho/godotenv v1.5.1
-	github.com/kneu-messenger-pigeon/events v0.1.41
+	github.com/kneu-messenger-pigeon/events v0.1.42
 	github.com/kneu-messenger-pigeon/victoria-metrics-init v0.1.3
 	github.com/segmentio/kafka-go v0.4.47
 	github.com/stretchr/testify v1.9.0
