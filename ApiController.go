@@ -6,18 +6,19 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/berejant/go-kneu"
-	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/kneu-messenger-pigeon/authorizer/dto"
-	"github.com/kneu-messenger-pigeon/events"
-	"github.com/segmentio/kafka-go"
 	"html"
 	"html/template"
 	"io"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/berejant/go-kneu"
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/kneu-messenger-pigeon/authorizer/dto"
+	"github.com/kneu-messenger-pigeon/events"
+	"github.com/segmentio/kafka-go"
 )
 
 const adminUserid = 1
@@ -127,7 +128,7 @@ func (controller *ApiController) completeAuth(c *gin.Context) {
 		return
 	}
 
-	if err == nil && tokenResponse.UserId == adminUserid {
+	if tokenResponse.UserId == adminUserid {
 		authOptionsClaims.KneuUserId = tokenResponse.UserId
 
 		state, err = controller.buildState(authOptionsClaims)
